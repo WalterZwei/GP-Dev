@@ -1,0 +1,172 @@
+<div class="palm-scene">
+	<div class="whole-scene-fade-top" x-mojo-scroll-fade="top"></div>
+	<div class="whole-scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
+		
+	<div class="van-page-header multi-line">
+		<div class="icon multi-line"></div>
+		<div id="title" class="title"></div>
+		<div class="subtitle">Version <span id="version-number"></span> by <span id="vendorname"></span></div>
+	</div>
+
+	<div id='MyListContainer'>
+		<div id="AppHelp_list" x-mojo-element="List" > </div>
+		<div id="AppSupport_list" x-mojo-element="List" > </div>
+	</div>
+
+<hr>
+<div class="palm-text-wrapper">
+
+<h1>Some Help</h1>
+<ul>
+<li>English: Help only availble in english</li>
+<li>España: Ayuda sólo availble en Inglés</li>
+<li>Français: Aide en anglais seulement availble</li>
+<li>Deutsch: Hilfe gibt es derzeit nur auf Englisch</li>
+</ul>
+
+<p>
+ GuttenPodder is a podcast download and listener app for webOS devices. It is
+ derrived work of drPodder, a well known podcast app by Jamie Hatfield.
+</p>
+
+<h3>Usage</h3>
+<ul>
+<li> Add your feeds
+<li> Download episodes you're interested in
+<li> Play Podcasts!
+</ul>
+    
+<h3>Feed list</h3>
+<ul>
+<li>Feel free to delete any of the default podcasts. </li>
+<li>You can add podcasts by url or search for podcasts using the '+' icon in the bottom left.
+  <ul>
+  <li>To enter the feed url directly, choose "Enter Feed URL..."<br>
+  <li>To find a Podcast feed thru tags, title or content use "Search Directory..."<br>
+  <li>"Search PodTrapper" open the PodTrapper website. Browse thru the content of
+  this website. To cancel the search tap the Guttenpodder icon on the website.<br>
+  As soon as you have choose a podcast, this podcast will be
+  loaded into GuttenPodder. This can take a while, but no progress indicator is shown (sorry for that). 
+  <li>"Dynamic Playlist..." creates a virtual feed. That's a selectable  mashup of
+  feeds already existing in GuttenPodder
+  </ul>
+</li>
+<li>Refresh button to refresh the list of feeds
+<li>Feed icon should show up on first update, if the feed has one
+<li>Line under feed name is the latest episode name
+<li>3 mini icons
+    <ul>
+      <li>disk - number of episodes downloaded/saved
+      <li>star - number of new episodes (their status is set to Unlistened)
+      <li>pause - number of new episodes you've started listening to (count currently not updating, but bookmarks are retained)
+      </ul>
+<li>Tap the mini icon area for feed operations: (Mark Listened &amp; Edit Feed)
+<li>Swipe to delete
+<li>Reorder is supported
+
+</ul>
+
+
+<h3> Episode List Screen </h3>
+<ul>
+ <li> Grayed out episodes are listened
+ <li> Button on right:
+  <ul>
+   <li> Blank - listened to, and no file is available
+   <li> Green Down Arrow - Unlistened (new) episode, ready for download
+   <li> Red X - Cancel current download
+   <li> Dark Blue Play - Episode ready to be played
+   <li> Red Minus - Episode has been listened to, file still exists
+  </ul>
+
+ <li> Tap the button on the right for relevent menu choices
+  <ul>
+   <li> Download, Stream, Resume, Restart, Mark [Un]Listened, Episode Details, Delete
+   <li> Restart is the only method for going into an episode and starting from the beginning.  All other methods will resume playback from your last saved position
+</ul>
+
+<h3> Episode Details Screen: </h3>
+<ul>
+ <li> Episode Title
+ <li> Playback scrubber with current time and time remaining and  has a buffer indicator also
+ <li> Episode Description (scrollable)
+ <li> Play/Pause/Download
+ <li> +/-20 seconds, +/- 1 minute button
+ <li> All playback operations *should* save your current position
+</ul>
+
+
+<h2>FAQ</h2>
+
+<h4>What is a podcast?</h4>
+A podcast is a type of digital media consisting of an episodic series of audio, video, PDF, or ePub files 
+subscribed to and downloaded through web syndication or streamed online to a computer or mobile device
+(Source: <a href="http://en.wikipedia.org/w/index.php?title=Podcast&oldid=513914983">Wikipedia article "Podcast"</a>)
+
+<h4>What is a feed?</h4>
+A feed is a short file containig description, the url and some other computer
+readable information about podcast episodes. 
+
+<h4>How do I delete a feed?</h4>
+As everywhere in webOS: Swipe it away (tap and hold the feed, and - without
+lifting the finger - swipe it to the right). You'll be asked for confirmation.
+
+<h4>How Do I migrate from drPodder or podFrenzy to GuttenPodder?</h4>
+The easy way: use the Import/Export-Feature with file drpodder.xml or the
+clipboard. You will loose the state of the feeds, but not the feeds
+themself. <br>
+The other way involves coping some internal database. It will keep you all
+feeds, state and downloads. Hopefully. 
+See <a href="http://forums.webosnation.com/webos-homebrew-apps/194583-drpodder-k-prepod-post2299374.html">this posting</a> for an idea how to do it.
+
+<h4>Why did you steal drPodder?</h4>
+I didn't. Jamie Hatfield put his app under the "GNU public licence" (GPL).
+So anybody is allowed to copy and change his app as long as this copied app is
+put under the same or compatible licence. And the source of the new app must
+be published. The big advantage: If an application is discontinued by the
+original author, the user is not left with a starving system (at least, if a
+new maintainer is found). <br> 
+See <a href='http://www.gnu.org/licenses/gpl-3.0-standalone.html'>http://www.gnu.org/licenses/gpl-3.0.txt</a>
+for the licence.
+On this <a href="http://www.u32.de/guttenpodder.html">page</a> you find the sources and current version of GuttenPodder (availble Oct. 2012).
+
+<h4>Why don't you make an android app? webOS is dead, Jim!</h4>
+Yes it is. But I use it still on my Pre 3. So I will maintainig
+it until my Pre will die. Physical.
+
+<h4>Are there any errors in Guttenpodder?</h4>
+Sure. Use the menu "Help" and the item "Send e-mail" to report. 
+Here are some known errors:
+<ul>
+ <li> The translations are not complete. 
+ <li> GuttenPodder is sometimes very slow 
+</ul>
+
+</div>
+<hr>
+
+<p>
+  GuttenPodder is &copy;copyright 2012 Walter Koch <a href=mailto:guttenpodder@u32.de">(Mail)</a>, licensed under
+  GPLv3<br>
+  GuttenPodder is a fork of drPodder (GPLv3):<br>
+    drPodder is &copy;copyright 2010 Jamie Hatfield<br>
+  <br>
+  GuttenPodder contains code from podfrenzy (GPLv3)<br>
+  podFrenzy is &copy;copyright 2011 Bits Of God Software, LLC (<a href="http://www.bitsofgodsoftware.com/podFrenzy">Website</a>)<br>
+  <br>
+  The full text of the GPLv3 can be found at:
+  <a href='http://www.gnu.org/licenses/gpl-3.0-standalone.html'>http://www.gnu.org/licenses/gpl-3.0.txt</a>. <br>
+  <br>
+  drPodder Logo Design: <a href='http://jamie3d.com/'>Jamie Hamel-Smith</a><br>
+  Original drPodder Logo Concept: <a href='http://www.userinterfaceicons.com/preview.php'>UII</a> <br>
+  <br>
+  Translations:<br>
+  German: Toby (tklr@P|C)<br>  
+  Spain-Spanish: Alejandro (erdosh@P|C)<br>  
+  Latino-Spanish: Eli (Spyderekz@P|C)<br>  
+  French: Yannick (yannick56@P|C)<br>  
+  Klingon: Michael (roneyii@P|C)/Chris (qurgh@P|C)
+</p>
+
+
+</div>

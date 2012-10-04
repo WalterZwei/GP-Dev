@@ -1,0 +1,43 @@
+{
+  "id":"de.u32.guttenpodder",
+
+  "version":"0.8.7",
+  "versionreleasedate": "4-Oct-2012",
+
+  "title":"GuttenPodder",
+  "vendor":"W. Koch",
+  "vendoremail":"guttenpodder@u32.de",
+  "vendorurl":"http://www.u32.de/guttenpodder.html",
+
+  "main":"index.html",
+  "icon":"icon.png",
+  "miniicon":"miniicon.png",
+  "type":"web",
+  "theme":"light",
+  "noWindow":true,
+  "noDeprecatedStyles":true,
+
+  "keywords":["podcast", "GuttenPodder", "drpodder"],
+
+  "smallicon":"icon32x32.png",
+
+  "support": {
+    "email": {
+      "address": "guttenpodder@u32.de",
+      "subject": "Support for GuttenPodder"
+    }
+  },
+
+  "uiRevision": 2,
+
+  "dockMode": true,
+
+   "universalSearch":{
+      "search":{
+         "displayName":"GuttenPodder",
+         "url":"de.u32.guttenpodder",
+         "launchParam":"query"
+      }
+   }
+
+}
