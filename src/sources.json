@@ -14,6 +14,8 @@
      "scenes": "feedList"},
     {"source": "app\/assistants\/addFeed-assistant.js",
      "scenes": "addFeed"},
+    {"source": "app\/assistants\/addLocal-assistant.js",
+     "scenes": "addLocal"},
     {"source": "app\/assistants\/addPlaylist-assistant.js",
      "scenes": "addPlaylist"},
     {"source": "app\/assistants\/episodeList-assistant.js",

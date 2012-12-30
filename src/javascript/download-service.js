@@ -49,6 +49,15 @@ DownloadService.prototype.download = function(sceneController, target, dir, file
 		method: "download",
 		onSuccess: callback,
 		onFailure: callback,
+//          onCreate:   function(){ Mojo.Log.info("*** onCreate ds request")},
+//          onLoading:  function(){ Mojo.Log.info("*** onLoading ds request")},
+//          onLoaded:   function(){ Mojo.Log.info("*** onLoaded ds request")},
+//          on301:      function(){ Mojo.Log.info("*** on301 ds")},
+//          on302:      function(){ Mojo.Log.info("*** on302 ds")},
+//          on401:      function(){ Mojo.Log.info("*** on401 ds")},
+//          on404:      function(){ Mojo.Log.info("*** on404 ds")},
+//          on500:      function(){ Mojo.Log.info("*** on500 ds")},
+//          onComplete: function(event,unk,unk3){ },
 		parameters: {"target": target,
 					"targetDir": "/media/internal/drPodder/" + dir,
 					"targetFilename": filename,
@@ -61,7 +70,7 @@ DownloadService.prototype.download = function(sceneController, target, dir, file
 DownloadService.prototype.allow1x = function(sceneController, callback) {
 	return this._serviceRequest(sceneController, this.URI, {
 		method: "allow1x",
-		onSuccess: function() {Mojo.Log.warn("allow1x Success"); callback();},
+		onSuccess: function() {Mojo.Log.info("allow1x Success"); callback();},
 		onFailure: function() {Mojo.Log.error("allow1x Failure"); callback();},
 		parameters: {"value": true}
 	});

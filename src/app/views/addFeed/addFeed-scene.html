@@ -58,12 +58,19 @@
                 <div x-mojo-element="ListSelector" id="maxDisplaySelector"></div>
             </div>
         </div-->
-        <div class="palm-row first">
+        <div id="sortingListRow" class="palm-row first">
+            <div class="palm-row-wrapper">
+                <div x-mojo-element="ListSelector" id="sortingList"></div>
+            </div>
+        </div>
+
+        <div class="palm-row">
             <div class="palm-row-wrapper">
                 <div x-mojo-element="ToggleButton" id="autoDeleteToggle"></div>
                 <div id="deleteWhenFinished" class="title left">Delete when finished</div>
             </div>
-        </div>
+        </div>                                        
+
         <div class="palm-row">
             <div class="palm-row-wrapper">
                 <div x-mojo-element="ToggleButton" id="hideFilesToggle"></div>
@@ -81,6 +88,7 @@
                 <div x-mojo-element="ListSelector" id="maxDownloadsSelector"></div>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -91,4 +99,3 @@
     </div>
 </div>
 
-<div style="text-align: center;"><div id="addButton" x-mojo-element="Button"></div><div id="cancelButton" x-mojo-element="Button"></div></div>

@@ -1,23 +1,28 @@
 /*
-This file is part of GuttenPodder.
+   This file is part of GuttenPodder.
 
-GuttenPodder is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+   GuttenPodder is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-GuttenPodder is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GuttenPodder is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with drPodder.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
 
-GuttenPodder is copyright 2012 W.Koch (koch@u32.de)
-GuttenPodder is a fork of drPodder 
-drPodder is copyright 2010 Jamie Hatfield <support@drpodder.com>
+   GuttenPodder copyright 2012 Walter Koch <guttenpodder@u32.de>
+
+   GuttenPodder is a fork of drPodder (GPL3):
+     drPodder is copyright 2010 Jamie Hatfield
+
+   GuttenPodder contains code from podfrenzy (GPL3)
+     podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
+           
 
 var DrPodder = {};
 DrPodder.MainStageName = "DrPodderMain";
@@ -201,7 +206,7 @@ AppAssistant.prototype.importOpml = function(opml) {
 		}
 	} catch (e){
 		Mojo.Log.error("error with OPML: (%s)", e);
-		Util.showError($L({value:"Error parsing OPML File", key:"errorParsingOPML"}), $L({value:"There was an error parsing the OPML file.  Please send the file to support@drPodder.com.", key:"errorParsingOPMLBody"}));
+		Util.showError($L({value:"Error parsing OPML File", key:"errorParsingOPML"}), $L({value:"There was an error parsing the OPML file.  Please send the file to guttenpodder@u32.de.", key:"errorParsingOPMLBody"}));
 	}
 };
 
@@ -224,7 +229,7 @@ AppAssistant.prototype.handleCommand = function(event) {
 						Util.showError($L({value:"Error reading OPML File", key:"errorReadingOPML"}), $L({value:"I don't know what happened, but we couldn't read the drpodder.xml file.", key:"couldntReadDrpodder"}));
 					},
 					on404: function() {
-						Util.showError($L({value:"OPML File not found", key:"opmlNotFound"}), $L({value:"Please place the drpodder.xml file in the root of the Pre's USB directory and retry.", key:"pleasePlaceDrpodder"}));
+						Util.showError($L({value:"OPML File not found", key:"opmlNotFound"}), $L({value:"Please place the drpodder.xml file in the root of the WebOS device's USB directory and retry.", key:"pleasePlaceDrpodder"}));
 					},
 					onSuccess: function(transport) {
 						this.importOpml(transport.responseText);
@@ -233,7 +238,7 @@ AppAssistant.prototype.handleCommand = function(event) {
 				break;
 			case "export-cmd":
 				var message = $L({value:"Copy the following out to a file named drpodder.xml (Make sure the filename is all lowercase and Windows doesn't rename the file as drpodder.xml.txt).<br>" +
-				              "To restore this set of feeds to drPodder, simply copy drpodder.xml to the root of the Pre's USB directory.", key:"opmlInstructions"}) +
+				              "To restore this set of feeds to GuttenPodder, simply copy drpodder.xml to the root of the Pre's USB directory.", key:"opmlInstructions"}) +
 							  "<br><br>&lt;opml version='1.1'>&lt;body><br>";
 				for (var i=0; i<feedModel.items.length; i++) {
 					var feed = feedModel.items[i];
@@ -259,7 +264,7 @@ AppAssistant.prototype.handleCommand = function(event) {
 				var dialog = new drnull.Dialog.Confirm(event.assistant, $L({value:"Report A Problem", key:"reportProblem"})+'?',
 					$L({value:"Would you like to send an email that is prepopulated with a detailed error report? No personal information such as usernames or passwords will be included.", key:"reportProblemPrompt"}),
 					function() {
-						var message = $L({value:"Please describe the problem you are experiencing with drPodder here:", key:"reportProblemIntro"}) + "<br/><br/><br/><br/><br/><br/>";
+						var message = $L({value:"Please describe the problem you are experiencing with GuttenPodder here:", key:"reportProblemIntro"}) + "<br/><br/><br/><br/><br/><br/>";
 						message += $L({value:"Report Information (please do not remove)", key:"reportInfo"}) + "<br/>";
 						message += "Application: " + Mojo.appInfo.id + " v" + Mojo.Controller.appInfo.version + "<br/>";
 						message += "Phone: Palm " + Mojo.Environment.DeviceInfo.modelName + " on " + Mojo.Environment.DeviceInfo.carrierName + "(" + Mojo.Environment.DeviceInfo.platformVersion + ")<br/>";
@@ -269,7 +274,7 @@ AppAssistant.prototype.handleCommand = function(event) {
 					}.bind(this),
 					function() {
 						var dialog = new drnull.Dialog.Info(event.assistant, $L({value:"Sorry for the inconvenience!", key:"sorry1"}),
-							$L({value:"I hope you can resolve your problem.  Please contact support@drPodder.com if you need further assistance.", key:"sorry2"}));
+							$L({value:"I hope you can resolve your problem.  Please contact guttenpodder@u32.de if you need further assistance.", key:"sorry2"}));
 						dialog.show();
 					}.bind(this));
 				dialog.show();

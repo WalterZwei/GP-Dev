@@ -1,21 +1,28 @@
 /*
-This file is part of drPodder.
+   This file is part of GuttenPodder.
 
-drPodder is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+   GuttenPodder is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-drPodder is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GuttenPodder is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with drPodder.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright 2010 Jamie Hatfield <support@drpodder.com>
+   GuttenPodder copyright 2012 Walter Koch <guttenpodder@u32.de>
+
+   GuttenPodder is a fork of drPodder (GPL3):
+     drPodder is copyright 2010 Jamie Hatfield
+
+   GuttenPodder contains code from podfrenzy (GPL3)
+     podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
+           
 
 function WebSearchAssistant(params) {
     if (params) {
@@ -31,7 +38,7 @@ WebSearchAssistant.prototype.cmdMenuModel = {
         {},
         {},
 //        {label: $L("Back"), command: "home-cmd"}
-		{iconPath: "icon32x32.png", command: "home-cmd"}
+        {iconPath: "icon32x32.png", command: "home-cmd"}
 
     ]
 };
@@ -53,7 +60,7 @@ WebSearchAssistant.prototype.setup = function() {
     this.searchWebView = this.controller.get("searchWebView");
 
     this.handleLinkClicked = this.linkClicked.bind(this);
-    this.handleTitleUrlChanged = this.TitleUrlChanged.bind(this);  
+    this.handleTitleUrlChanged = this.titleUrlChanged.bind(this);  
     this.cmdMenuModel.items[0] = {};
     this.cmdMenuModel.items[1] = {};
     this.level = 0;
@@ -61,7 +68,7 @@ WebSearchAssistant.prototype.setup = function() {
 
     this.kbdButton = {label:$L('Kbd'), command:'kbd-cmd'};
     if(!_device_.thisDevice.kb){
-        Mojo.Log.info("no keyboard");
+        //Mojo.Log.info("no keyboard");
         this.cmdMenuModel.items[3]= this.kbdButton;
     }
 
@@ -74,14 +81,20 @@ WebSearchAssistant.prototype.activate = function(event) {
 };
 
 WebSearchAssistant.prototype.deactivate = function(event) {
-    Mojo.Event.stopListening(this.searchWebView, Mojo.Event.webViewLinkClicked, this.handleLinkClicked);
-    Mojo.Event.stopListening(this.searchWebView, Mojo.Event.webViewTitleUrlChanged, this.handleTitleUrlChanged);
+    this.stopUrlWatch();
 };
 
 WebSearchAssistant.prototype.cleanup = function(event) {
 };
 
-WebSearchAssistant.prototype.TitleUrlChanged = function(event) {
+
+WebSearchAssistant.prototype.stopUrlWatch = function() {
+    Mojo.Event.stopListening(this.searchWebView, Mojo.Event.webViewLinkClicked, this.handleLinkClicked);
+    Mojo.Event.stopListening(this.searchWebView, Mojo.Event.webViewTitleUrlChanged, this.handleTitleUrlChanged);
+}
+
+
+WebSearchAssistant.prototype.titleUrlChanged = function(event) {
    //Mojo.Log.info("event titleurlchanged " + event.url);
    this.urlchanged(event);
 }
@@ -93,19 +106,11 @@ WebSearchAssistant.prototype.linkClicked = function(event) {
 
 WebSearchAssistant.prototype.urlchanged = function(event) {
   if( this.lastUrl != event.url ) {
-//   Mojo.Log.info("event.url "+ event.url);
-//   Mojo.Log.info("event.title "+ event.title);
-//   Mojo.Log.info("event.type "+ event.type);
-//   Mojo.Log.info("event.element "+ event.element);
-//   Mojo.Log.info("event.target "+ event.target);
-//   Mojo.Log.info("event.srcEle "+ event.srcElement);
-//   for( var attr in event ) {
-//       Mojo.Log.info("  attr   " + attr);
-//   }
-
      this.lastUrl = event.url;
      if (this.limitSite && !event.url.startsWith(this.limitSite)) {
-         // Elvis has left that site, so the new url is the feed url - hopefully
+         // Elvis has left the site, so the new url is the feed url - hopefully
+         Mojo.Log.info("leaving websearch with "+ event.url);
+         this.stopUrlWatch();
          this.controller.stageController.popScene({feedToAdd: {url:event.url}});
      } else {
          try{

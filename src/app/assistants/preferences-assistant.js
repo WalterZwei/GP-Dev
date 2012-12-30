@@ -1,21 +1,28 @@
 /*
-This file is part of drPodder.
+   This file is part of GuttenPodder.
 
-drPodder is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+   GuttenPodder is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-drPodder is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GuttenPodder is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with drPodder.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
 
-Copyright 2010 Jamie Hatfield <support@drpodder.com>
+   GuttenPodder copyright 2012 Walter Koch <guttenpodder@u32.de>
+
+   GuttenPodder is a fork of drPodder (GPL3):
+     drPodder is copyright 2010 Jamie Hatfield
+
+   GuttenPodder contains code from podfrenzy (GPL3)
+     podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
+           
 
 function PreferencesAssistant() {
 }
@@ -46,7 +53,7 @@ PreferencesAssistant.prototype.setup = function() {
 		 labelPlacement: Mojo.Widget.labelPlacementLeft,
 		 choices: [
 				  {label: $L("Hourly"), value: "H"},
-				  {label: $L("Daily"), value: "D"},
+				  {label: $L("Daily"),  value: "D"},
 				  {label: $L("Weekly"), value: "W"}]},
 		{ value : Prefs.updateType });
 
@@ -169,7 +176,6 @@ PreferencesAssistant.prototype.setup = function() {
 	this.updateTimeHandler = this.updateTime.bind(this);
 	this.wifiHandler = this.wifi.bind(this);
 	this.playbackDashboardHandler = this.playbackDashboard.bind(this);
-//	this.useMetrixHandler = this.useMetrix.bind(this);
 	this.limitToWifiHandler = this.limitToWifi.bind(this);
 	this.transitionHandler = this.transition.bind(this);
 	this.translationHandler = this.translation.bind(this);
@@ -193,7 +199,6 @@ PreferencesAssistant.prototype.localize = function() {
 	Util.localize(this, "autoUpdate", "Auto Update", "autoUpdate");
 	Util.localize(this, "enableWifi", "Enable WiFi", "enableWifi");
 	Util.localize(this, "playbackDashboard", "Dashboard Ctrls", "playbackDashboard");
-//	Util.localize(this, "useMetrix", "Statistics", "useMetrix");
 	Util.localize(this, "limitToWifi", "DL only over WiFi", "limitToWifi");
 	Util.localize(this, "feedListSettings", "Feed List Settings", "feedListSettings");
 	Util.localize(this, "albumArt", "Show Album Art", "albumArt");
@@ -212,7 +217,6 @@ PreferencesAssistant.prototype.activate = function() {
 	Mojo.Event.listen(this.controller.get('timePicker'),Mojo.Event.propertyChange,this.updateTimeHandler);
 	Mojo.Event.listen(this.controller.get('wifiToggle'),Mojo.Event.propertyChange,this.wifiHandler);
 	Mojo.Event.listen(this.controller.get('playbackDashboardToggle'),Mojo.Event.propertyChange,this.playbackDashboardHandler);
-//	Mojo.Event.listen(this.controller.get('useMetrixToggle'),Mojo.Event.propertyChange,this.useMetrixHandler);
 	Mojo.Event.listen(this.controller.get('limitToWifiToggle'),Mojo.Event.propertyChange,this.limitToWifiHandler);
 	Mojo.Event.listen(this.controller.get('transitionList'),Mojo.Event.propertyChange,this.transitionHandler);
 	Mojo.Event.listen(this.controller.get('translationList'),Mojo.Event.propertyChange,this.translationHandler);
@@ -230,7 +234,6 @@ PreferencesAssistant.prototype.deactivate = function() {
 	Mojo.Event.stopListening(this.controller.get('timePicker'),Mojo.Event.propertyChange,this.updateTimeHandler);
 	Mojo.Event.stopListening(this.controller.get('wifiToggle'),Mojo.Event.propertyChange,this.wifiHandler);
 	Mojo.Event.stopListening(this.controller.get('playbackDashboardToggle'),Mojo.Event.propertyChange,this.playbackDashboard);
-//	Mojo.Event.stopListening(this.controller.get('useMetrixToggle'),Mojo.Event.propertyChange,this.useMetrixHandler);
 	Mojo.Event.stopListening(this.controller.get('limitToWifiToggle'),Mojo.Event.propertyChange,this.limitToWifiHandler);
 	Mojo.Event.stopListening(this.controller.get('transitionList'),Mojo.Event.propertyChange,this.transitionHandler);
 	Mojo.Event.stopListening(this.controller.get('translationList'),Mojo.Event.propertyChange,this.translationHandler);
@@ -310,9 +313,6 @@ PreferencesAssistant.prototype.playbackDashboard = function(event) {
 	Prefs.playbackDashboard = event.value;
 };
 
-PreferencesAssistant.prototype.useMetrix = function(event) {
-	Prefs.useMetrix = false;
-};
 
 PreferencesAssistant.prototype.limitToWifi = function(event) {
 	/*
