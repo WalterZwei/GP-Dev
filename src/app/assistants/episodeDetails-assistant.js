@@ -261,9 +261,9 @@ EpisodeDetailsAssistant.prototype.setup = function() {
 EpisodeDetailsAssistant.prototype.orientationChanged = function(orientation) {
     var width = Mojo.Environment.DeviceInfo.screenWidth;
     var height = Mojo.Environment.DeviceInfo.screenHeight;
-    Mojo.Log.warn("Episode - orientationChanged - height: ", height, " - width: ", width);
 
     if (Prefs.freeRotation) {
+        Mojo.Log.warn("Episode - orientationChanged - height: ", height, " - width: ", width);
         Mojo.Log.warn("Episode - orientationChanged - in free rotation");
         var item = this.controller.get('progress');
         item.removeClassName('portrait');
@@ -289,7 +289,7 @@ EpisodeDetailsAssistant.prototype.adjustHeader = function() {
 EpisodeDetailsAssistant.prototype.activate = function() {
     this.adjustHeader();
     this.isForeground = true;
-    Mojo.Log.info("isForeground = true");
+    Mojo.Log.info("EpisodeDetails.activate isForeground = true");
     Mojo.Event.listen(this.header, Mojo.Event.tap, this.titleTapHandler);
 
     if ((this.episodeObject.enclosure || this.episodeObject.downloaded) && !this.isVideo()) {
@@ -430,6 +430,7 @@ EpisodeDetailsAssistant.prototype.readyToPlay = function() {
     if (this.audioObject && this.audioObject.pause) {this.audioObject.pause();}
     //for (var p in this.audioObject) {Mojo.Log.error("ao.%s=%s", p, this.audioObject[p]);}
     //for (var p in this.audioExt) {Mojo.Log.error("ae.%s=%s", p, this.audioExt[p]);}
+
     if (this.episodeObject.file) {
         Mojo.Log.warn("Setting [%s] file src to:[%s]", this.episodeObject.type, this.episodeObject.file);
         this.setStatus();
@@ -535,7 +536,7 @@ EpisodeDetailsAssistant.prototype.handleError = function(event) {
 };
 
 EpisodeDetailsAssistant.prototype.mediaKeyPressHandler = function(event) {
-    Mojo.Log.info("received mediaKeyPress: %s", Mojo.Log.propertiesAsString(event));
+    Mojo.Log.info("received mediaKeyPress: %s %j", event.key, event);
     if (event.state === 'down') {
         switch (event.key) {
             case "togglePausePlay":
@@ -634,13 +635,25 @@ EpisodeDetailsAssistant.prototype.statusTimer = function() {
 };
 
 EpisodeDetailsAssistant.prototype.handleAudioEvents = function(event) {
-    Mojo.Log.warn("AudioEvent: %s", event.type);
+    Mojo.Log.info("AudioEvent: %s", event.type);
+    // During the loading process of an audio/video, the following events occur, in this order:
+    // loadstart
+    // durationchange
+    // loadedmetadata
+    // loadeddata
+    // progress
+    // canplay
+    // canplaythrough
+    // (http://www.w3schools.com/tags/av_event_canplaythrough.asp)
+
     switch (event.type) {
         case "load":
             this.setStatus();
             this.updateProgress();
             break;
         case "durationchange":
+            // The durationchange event occurs when the duration data of the specified audio/video is changed.
+            // When an audio/video is loaded, the duration will change from "NaN" to the actual duration of the audio/video.
             if (this.resume) {
                 Mojo.Log.info("resuming playback at %d", this.episodeObject.position);
                 try {
@@ -1042,7 +1055,7 @@ EpisodeDetailsAssistant.prototype.refreshMenu = function() {
 EpisodeDetailsAssistant.prototype.onBlur = function() {
     this.bookmark();
     this.isForeground = false;
-    Mojo.Log.info("isForeground = %s", this.isForeground);
+    Mojo.Log.info("onblur: isForeground = %s", this.isForeground);
     this.setTimer(false);
     if (!this.isVideo()) {
         this.player.showDashboard(this.controller.stageController);
@@ -1056,7 +1069,7 @@ EpisodeDetailsAssistant.prototype.considerForNotification = function(params) {
         switch (params.type) {
             case "onFocus":
                 this.isForeground = true;
-                Mojo.Log.info("isForeground = %s", this.isForeground);
+                Mojo.Log.info("onFocus: isForeground = %s", this.isForeground);
                 this.updateProgress();
                 if (!this.isVideo()) {
                     this.player.hideDashboard();

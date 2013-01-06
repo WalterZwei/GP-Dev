@@ -1,0 +1,59 @@
+Changes (based on drPodder 0.7.7):
+
+
+0.8.4 (annonced on nexave.de and webosnation.com forum drpodder thread)
+* new episode filter "not downloaded & new", "downloaded & new"
+* new episode cmd "Play all from here"
+* fullscreen support for TouchPad (from podFrenzy)
+* back button for tp in most scenes (from podfrenzy)
+* save + cancel button in addfeed scene and addplaylist scene for devices without keyboard (yes, Touchpad)
+* import/export options from podfrenzy (needs cleanup)
+* changed support mail + web adress 
+* changed app icons
+* code for metrix statistic ("phoning home") removed  
+* episode detail scene shows now ??:?? on unknown duration
+* changed epsioden command menu: "mark all as new/old" to "mark all visible as New/old"
+* example podcast changed (non existing deleted, two german podcast added)
+* fixed podcast.de search (patch by "uwer" from precentral forum,12-09-08 in http://forums.webosnation.com/webos-homebrew-apps/194583-drpodder-k-prepod-117.html#post3344606)
+* gpodder search added ( // gpodder-Patch provided by Thomas Perl <m@thp.io>, http://thp.io/2011/webos/drpodder_gpoddernet-integration.patch)
+* fixed podtrapper bug (webos bug ; webViewLinkClicked-event does not work together with mojo.openUrl() in 2.2.4 and 3.0.x)
+* changed local filename generation (shorter, spaces replaced by underscore)
+* internal changes (debug code)
+
+
+0.8.7 (published in webosnation's homebrew)
+* changed name from "guttenPodder" to "GuttenPodder"
+* localiced timestamps in episodes 
+* merged "about" and "help" menu 
+* start logo width/length fixed on TP
+* fixed hangig in feedlist caused by invalid replace regexp e.g. (  *
+* removed error message explaintion regarding podshifter (podshifter is AFAICS not availble any more)
+* removed senseless edit menu in feed list
+* itunes search fixed and enabled
+* fixed german translation
+
+0.9.0
+* New: Support of local Files ("Local Media") (e.g. for audiobooks)
+* Added option to sort episodes (in feeds, playlists and local media). Sorting supports
+    * "publication date, newest first" (default)
+    * "publication date, oldest first" 
+    * title 
+    * title, descending
+    * url
+* the items in the episode list are now reorderable. Tap an item and drag it to
+  a new position. Use it for temporary rearrangement of the play sequence.
+  Attention: Those changes are lost, when GuttenPodder is closed
+* fixed another podtrapper bug: Did not load podcast, which are directory URL
+  (e.g "Tagesschau in 100 Sekunden"), GuttenPodder instead stoped displaying
+  anything (thanks konus|webosnations for reporting this)
+* Replaced big "save" and "cancel" buttons with small 'Back' and 'Done' button in the "add feed" scene
+* episode popup menu slightly changed
+* Removed universal search and dockmode (temporarly); they didn't work properly
+* Automatic removal of // in front of XML-Urls
+
+0.9.1
+* Fix: Media permission dialog was not shown, so that local media did not work
+
+Known Errors: 
+* no translation yet
+* some podcast with http redirection do not work

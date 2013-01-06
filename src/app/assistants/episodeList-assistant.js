@@ -466,12 +466,13 @@ EpisodeListAssistant.prototype.playFrom = function(oldest,startepisode) {
            var episode = this.episodeModel.items[i];
            if (episode === startepisode) { found = true }
            if (episode.enclosure && found) {
-               Mojo.Log.info("---c-%d-%s-%s",i,found, episode.title);
+               //Mojo.Log.info("---c-%d-%s-%s",i,found, episode.title);
                playlist.push(episode);
            }
        }
     }
     if (oldest) {playlist.reverse();}
+
     if (playlist.length > 0) {
         var e = playlist.shift();
         this.stageController.pushScene({name: "episodeDetails", transition: Mojo.Transition.none}, e, {autoPlay: true, resume: true, playlist: playlist});

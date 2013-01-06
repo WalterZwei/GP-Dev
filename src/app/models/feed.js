@@ -215,8 +215,8 @@ Feed.prototype.updateFeedIds = function(feedIndex, callback) {
 };
 
 Feed.prototype.updateMedia = function(callback) {
+     var self = this;  
      Mojo.Log.info('calling media indexer ...');  
-     self = this;
      var stageController = Mojo.Controller.getAppController().getActiveStageController();
      var currentScene = stageController.activeScene();
 
@@ -234,12 +234,52 @@ Feed.prototype.updateMedia = function(callback) {
               self.media2episode(results, callback);  
          },  
          onFailure: function(e) {  
-             Mojo.Log.info("find failure! Err = " + e);
+             Mojo.Log.info("find failure! Err = %j ", e);
              Mojo.Log.info('We do not have permission.');  
-             callback();  
+             self.requestPermission( function() {
+                   self.updateMedia(callback);  
+                }.bind(self),
+                function() {      //failfunction
+                   callback();
+                }.bind(self)
+             );
          }  
      });  
 };
+
+Feed.prototype.requestPermission = function (cbPermission, cbFail) { 
+// delete Permission: luna-send -n 1 -a com.palm.filenotifyd.js palm://com.palm.db/del '{"query":{"from":"com.palm.media.permissions:1"}}'
+// query permissions: luna-send -n 1 -f -a com.palm.filenotifyd.js palm://com.palm.db/find '{"query":{"from":"com.palm.media.permissions:1"}}'
+     Mojo.Log.info('requesting media permission...');  
+     var stageController = Mojo.Controller.getAppController().getActiveStageController();
+     var currentScene = stageController.activeScene(); 
+     var didRequest = true; 
+
+     currentScene.serviceRequest('palm://com.palm.mediapermissions', {  
+        method: 'request',  
+        parameters: {  
+            rights: {  
+                    read: ["com.palm.media.audio.file:1"]  
+            }  
+        },  
+        onComplete: function(response) {  
+            Mojo.Log.error('completed requestPermission; %j',response);  
+            // this function is sometimes called more than once ... 
+            if( didRequest ) {  // or   if( response.returnValue ) ... 
+                didRequest = false;
+                if (response.returnValue && response.isAllowed) {  
+                   Mojo.Log.info('Got media permissions');
+                   cbPermission();
+                } else {          
+                   Mojo.Log.error('Failed to get permissions');  
+                   Util.showError('No media permission', 'GuttenPodder can not access local files due to missing permissions');
+                   cbFail();
+                }  
+            }
+        }  
+    });
+}
+
 
 Feed.prototype.hasMatch = function(path, sFilter) {
     return !( (!this.hideFromOS & (path.startsWith('/media/internal/drPodder/')))
