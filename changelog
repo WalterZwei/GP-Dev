@@ -51,9 +51,32 @@ Changes (based on drPodder 0.7.7):
 * Removed universal search and dockmode (temporarly); they didn't work properly
 * Automatic removal of // in front of XML-Urls
 
-0.9.1
-* Fix: Media permission dialog was not shown, so that local media did not work
+0.9.1 (2013-01-06)
+* Fix: Media permission dialog was not shown, so local media did not work
 
-Known Errors: 
-* no translation yet
-* some podcast with http redirection do not work
+0.9.3 (2013-03-19)
+* new: sleeptimer in the episode detail screen's menu (suggested several 
+  times, e.g. by sanaking|pc). no dockmode support yet.
+* new: local media search expressions are now case insensitive 
+  with switchable search modes for path and/or titel (suggested by Adam Marks)
+* new 'path' sort mode for episodes
+* fix: manual reorder of episodes with tapping & dropping should now work 
+  well. After restarting GP the last sort order is restored.
+* fix: in episode description iframes and objects are now ignored; there 
+  are podcasts out there (eg. psycomedia) with info text with many embedded videos, 
+  resultin in many many windows (reported by Peter Mohlin)
+* fix: resume playing did not work every time - I hope it works now 
+  (reported by bethel95|pc)
+* fix: every word of the episode title was always capitalized by webos 
+* del: removed "gdgt weekly" from default feeds (it's dead, Jim)
+
+
+Known errors: 
+* sometimes audio streaming does not work
+* some podcast do not play because of strange http redirection 
+* video podcasts are not bookmarked
+* sometimes feed list becomes invisible and must be scrolled to become visible again
+* search via podcast.de does not work any more (I've contacted them)
+* the translations are not complete (my fault)
+
+

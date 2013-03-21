@@ -375,12 +375,21 @@ DBClass.prototype.saveFeed = function(f, displayOrder, functionWhenFinished, fee
 
     this.db.transaction(function(transaction) {
         if (f.id === undefined) {f.id = null;}
+        if (f.maxEpisodes == -1) { f.maxEpisodes = f.maxEpisodesOriginal }
+
         if (f.playlist) {
             f.url = "drPodder://" + f.feedIds.join(",");
         } else if (f.isLocalMedia) {
-            f.url = "media://" + f.filenameFilterExp;
+
+            f.url = "media://" 
+
+            if (f.filterMode == "and"   ) { f.url = f.url + f.titleFilterExp + "&&" + f.pathFilterExp; }
+            if (f.filterMode == "or"    ) { f.url = f.url + f.titleFilterExp + "||" + f.pathFilterExp; }
+            if (f.filterMode == "title" ) { f.url = f.url + f.titleFilterExp + "||"; }
+            if (f.filterMode == "path"  ) { f.url = f.url +                    "||" + f.pathFilterExp; }
+            if (f.filterMode == "none"  ) {  };
         }
-        Mojo.Log.info("db.savefeed: %s - url: %s", f.title, f.url);
+        Mojo.Log.info("db.savefeed: '%s' - url: '%s'", f.title, f.url);
         transaction.executeSql(saveFeedSQL, [f.id, f.displayOrder, f.title, f.url, f.albumArt,
                                  (f.autoDelete)?1:0, (f.autoDownload)?1:0, f.maxDownloads, f.interval, f.lastModified, f.replacements, f.maxDisplay,
                                  f.viewFilter, f.username, f.password, (f.hideFromOS)?1:0, f.maxEpisodes],
@@ -563,6 +572,7 @@ DBClass.prototype.readPrefs = function() {
     if (Prefs.albumArt === undefined) {Prefs.albumArt = true;}
     if (Prefs.simple === undefined) {Prefs.simple = false;}
     if (Prefs.singleTap === undefined) {Prefs.singleTap = true;}
+    if (Prefs.debugSwitch === undefined) {Prefs.debugSwitch = false;}
     if (Prefs.freeRotation === undefined) {Prefs.freeRotation = false; Prefs.firstRun = true;}
     if (Prefs.transition === undefined) {Prefs.transition = Mojo.Transition.none;}
     Prefs.systemTranslation = Mojo.Locale.getCurrentLocale();
@@ -595,15 +605,16 @@ DBClass.prototype.defaultFeeds = function() {
     feedModel.add(feed);
     // 2012-08-17
 
-    feed = new Feed();
-    feed.url = "http://feeds.gdgt.com/gdgt/podcast-mp3/";
-    feed.title = "gdgt weekly";
-    feed.interval = 60000;
-    feedModel.add(feed);
+  // dead, 130319
+  //  feed = new Feed();
+  //   feed.url = "http://feeds.gdgt.com/gdgt/podcast-mp3/";
+  //   feed.title = "gdgt weekly";
+  //   feed.interval = 60000;
+  //   feedModel.add(feed);
 
     feed = new Feed();
     feed.url = "http://podcast.wdr.de/radio/zeitzeichen.xml";
-    feed.title = "Zeitzeichen (german)";
+    feed.title = "German: Zeitzeichen";
     feed.interval = 60000;
     feedModel.add(feed);
     

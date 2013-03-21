@@ -1,24 +1,26 @@
 /*
-This file is part of GuttenPodder.
+   This file is part of GuttenPodder.
 
-GuttenPodder is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+   GuttenPodder is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-GuttenPodder is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GuttenPodder is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
 
-GuttenPodder is a modification of drPodder:
-   Copyright 2010 Jamie Hatfield <support@drpodder.com>
+   GuttenPodder copyright 2012 Walter Koch <guttenpodder@u32.de>
 
-GuttenPodder contains some code from podfrenzy
+   GuttenPodder is a fork of drPodder (GPL3):
+     drPodder is copyright 2010 Jamie Hatfield
 
+   GuttenPodder contains code from podfrenzy (GPL3)
+     podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
 
 function EpisodeDetailsAssistant(episode, options) {
@@ -28,13 +30,13 @@ function EpisodeDetailsAssistant(episode, options) {
     this.autoPlay = options.autoPlay;
     this.playlist = options.playlist;
     this.isForeground = true;
-    Mojo.Log.info("isForeground = %s", this.isForeground);
     this.bak60Pos=0;
     this.bak30Pos=1;
     this.playPausePos=2;
     this.fwd30Pos=3;
-    this.fwd60Pos=4;    
+    this.fwd60Pos=4;   
 };
+
 
 EpisodeDetailsAssistant.prototype.progressAttr = {
     sliderProperty: "value",
@@ -54,12 +56,21 @@ EpisodeDetailsAssistant.prototype.menuAttr = {omitDefaultItems: true};
 EpisodeDetailsAssistant.prototype.menuModel = {
     visible: true,
     items: [
-        Mojo.Menu.editItem,
         {label: $L({value:"Play using webOS player", key:"playExternal"}), command: "playExternal-cmd"},
+        {label: $L({value:"Sleep timer", key:"sleeptimer"}),
+         items: [{label: $L({value:"off",               key:"off"      }), command: "sleeptimer-off-cmd"},
+                 {label: $L({value:"30 seconds",        key:"30s"      }), command: "sleeptimer-30-cmd"},
+                 {label: $L({value:"5 Minutes",         key:"5minutes" }), command: "sleeptimer-300-cmd"},
+                 {label: $L({value:"10 Minutes",        key:"10minutes"}), command: "sleeptimer-600-cmd"},
+                 {label: $L({value:"20 Minutes",        key:"20minutes"}), command: "sleeptimer-1200-cmd"},
+                 {label: $L({value:"30 Minutes",        key:"30minutes"}), command: "sleeptimer-1800-cmd"},
+                 {label: $L({value:"45 Minutes",        key:"45minutes"}), command: "sleeptimer-2700-cmd"},
+                 {label: $L({value:"1 hour",            key:"1h"       }), command: "sleeptimer-3600-cmd"}]
+        },
         {label: $L({value:"Share Episode", key:"shareEpisode"}),
-         items: [{label: $L({value:"Via Email", key:"viaEmail"}), command: "share-cmd"},
+         items: [{label: $L({value:"Via Email",        key:"viaEmail"      }), command: "share-cmd"},
                  {label: $L({value:"Copy Episode URL", key:"copyEpisodeURL"}), command: "copyEpisode-cmd"},
-                 {label: $L({value:"Copy Feed URL", key:"copyFeedURL"}), command: "copyFeed-cmd"}]
+                 {label: $L({value:"Copy Feed URL",    key:"copyFeedURL"   }), command: "copyFeed-cmd"}]
         },
         {label: $L({value:"Report a Problem", key:"reportProblem"}), command: "report-cmd"},
         {label: $L("Help") + "...", command: "help-cmd"}
@@ -113,21 +124,28 @@ EpisodeDetailsAssistant.prototype.setup = function() {
     DB.getEpisodeDescription(this.episodeObject, function(description) {
         // Mojo.Format.runTextIndexer doesn't alway work right...
         if (description.indexOf("<a") === 0) {
-            description = Mojo.Format.runTextIndexer(description);
+           description = Mojo.Format.runTextIndexer(description);
         }
-        this.controller.update(self.controller.get("episodeDetailsDescription"), description);
+
+        //Kill iframes, eg. in    http://psycomedia.wordpress.com/feed/ 
+        description = description.replace(/<iframe[^>]*>/g, '<div>');
+        description = description.replace(/<\/iframe/g, '</div');
+        description = description.replace(/<object[^>]*>/g, '<div>');
+        description = description.replace(/<\/object/g, '</div');
+
+        self.controller.update(self.controller.get("episodeDetailsDescription"), description);
+
+     // if( Prefs.debugSwitch ) {
+     //     var s = "<table border=1>";
+     //       for (var key in self.episodeObject) {
+     //         if (self.episodeObject.hasOwnProperty(key)) {
+     //             s = s + "<tr><td> " + key + "</td><td>" + self.episodeObject[key] + "</td></tr>";
+     //         }
+     //     }
+     //     self.controller.update(self.controller.get("episodeDetailsExtended"), s + "</table>");
+     // }
+
     }.bind(this));
-
-    // 
-//  var s = "---";
-//  for (var key in this.episodeObject) {
-//      if (this.episodeObject.hasOwnProperty(key)) {
-//          s = s + " <dl>" + key + "</dl>" 
-//                + " <dd>" + this.episodeObject[key] + "</dd>";
-//      }
-//  }
-//  this.controller.update(this.controller.get("episodeDetailsExtended"), s);
-
 
     /*
     var viewMenuPrev = {icon: "", command: "", label: " "};
@@ -228,7 +246,7 @@ EpisodeDetailsAssistant.prototype.setup = function() {
 
             // as soon as setup finishes, we are ready to play
             this.readyToPlay.bind(this).defer();
-        } else {
+        } else { // Video 
             this.progressInfo.hide();
             this.progressInfoHidden = true;
             this.adjustHeader();
@@ -263,8 +281,7 @@ EpisodeDetailsAssistant.prototype.orientationChanged = function(orientation) {
     var height = Mojo.Environment.DeviceInfo.screenHeight;
 
     if (Prefs.freeRotation) {
-        Mojo.Log.warn("Episode - orientationChanged - height: ", height, " - width: ", width);
-        Mojo.Log.warn("Episode - orientationChanged - in free rotation");
+        Mojo.Log.info("Episode - free rot - orientationChanged - height: ", height, " - width: ", width);
         var item = this.controller.get('progress');
         item.removeClassName('portrait');
         item.removeClassName('landscape480');
@@ -282,8 +299,13 @@ EpisodeDetailsAssistant.prototype.orientationChanged = function(orientation) {
 
 EpisodeDetailsAssistant.prototype.adjustHeader = function() {
     var height=this.controller.get("topContent").getHeight();
-    this.controller.get("topSpacer").style.height = height + 'px';
-    this.controller.get("descriptionFade").style.top = height + 'px';
+    try {
+       this.controller.get("topSpacer").style.height = height + 'px';
+       this.controller.get("descriptionFade").style.top = height + 'px';
+    } catch (f) {
+       Mojo.Log.error("Exception adjustheader %s", f);
+    }
+   
 };
 
 EpisodeDetailsAssistant.prototype.activate = function() {
@@ -307,6 +329,7 @@ EpisodeDetailsAssistant.prototype.activate = function() {
 };
 
 EpisodeDetailsAssistant.prototype.deactivate = function() {
+
     Mojo.Event.stopListening(this.header, Mojo.Event.tap, this.titleTapHandler);
 
     if ((this.episodeObject.enclosure || this.episodeObject.downloaded) && !this.isVideo()) {
@@ -328,16 +351,18 @@ EpisodeDetailsAssistant.prototype.deactivate = function() {
 };
 
 EpisodeDetailsAssistant.prototype.cleanup = function() {
+    this.sleepTimerStop(); 
     this.setTimer(false);
     if (this.episodeObject.enclosure) {
         if (!this.isVideo()) {
             if (!this.finished) {
                 var beforeSave = function() {};
                 var functionWhenFinished = function() {};
+
                 if (!this.poppingScene) {
                     Mojo.Log.warn("Closing app, we need to bookmark though!");
                     beforeSave = Util.dashboard.bind(this, DrPodder.DashboardStageName, $L({value: "Saving Bookmark", key: "savingBookmark"}),
-                            $L({value: "Dashboard should close automatically", key: "savingBookmarkDescription"}), true);
+                                                     $L({value: "Dashboard should close automatically", key: "savingBookmarkDescription"}), true);
                     functionWhenFinished = Util.closeDashboard.bind(this, DrPodder.DashboardStageName);
                 }
                 this.bookmark(beforeSave, functionWhenFinished);
@@ -420,7 +445,7 @@ EpisodeDetailsAssistant.prototype.setTimer = function(bool) {
         this.controller.window.clearInterval(this.updateTimer);
         this.updateTimer = null;
     }
-    Mojo.Log.info("setTimer: set it=%s, isForeground=%s", bool, this.isForeground);
+    //Mojo.Log.info("setTimer: set it=%s, isForeground=%s", bool, this.isForeground);
     if (bool && this.isForeground) {
         this.updateTimer = this.controller.window.setInterval(this.updateProgress.bind(this), 500);
     }
@@ -432,7 +457,7 @@ EpisodeDetailsAssistant.prototype.readyToPlay = function() {
     //for (var p in this.audioExt) {Mojo.Log.error("ae.%s=%s", p, this.audioExt[p]);}
 
     if (this.episodeObject.file) {
-        Mojo.Log.warn("Setting [%s] file src to:[%s]", this.episodeObject.type, this.episodeObject.file);
+        Mojo.Log.info("Setting [%s] file src to:[%s]", this.episodeObject.type, this.episodeObject.file);
         this.setStatus();
         this.audioObject.src = this.episodeObject.file;
         this.progressModel.progressStart = 0;
@@ -440,13 +465,14 @@ EpisodeDetailsAssistant.prototype.readyToPlay = function() {
         this.controller.modelChanged(this.progressModel);
     } else {
         var url = this.episodeObject.getEnclosure();
-        Mojo.Log.warn("Setting [%s] stream src to:[%s]", this.episodeObject.type, url);
+        Mojo.Log.info("Setting [%s] stream src to:[%s]", this.episodeObject.type, url);
         this.setStatus($L("Connecting"));
         this.audioObject.src = url;
         this.progressModel.progressStart = 0;
         this.progressModel.progressEnd = 0;
         this.controller.modelChanged(this.progressModel);
     }
+
     this.audioObject.load();
     this.audioObject.autoplay = this.autoPlay;
     this.setTimer(true);
@@ -599,13 +625,12 @@ EpisodeDetailsAssistant.prototype.keyDownHandler = function(event) {
             //this.audioObject.playbackRate = .5;
             break;
         default:
-            Mojo.Log.warn("Ignoring keyCode: ", key);
+            Mojo.Log.warn("Ignoring keyCode: %s --- %j", key, event);
             break;
     }
 };
 
 EpisodeDetailsAssistant.prototype.setStatus = function(message, maxDisplay) {
-    Mojo.Log.info("setStatus: %s", message);
     this.statusMessage = message;
     this.statusIter = 2;
     this.statusDiv.update(message);
@@ -621,7 +646,53 @@ EpisodeDetailsAssistant.prototype.setStatus = function(message, maxDisplay) {
             this.statusTimerID = null;
         }
     }
+
+    this.sleepTimerStart(); 
 };
+
+
+EpisodeDetailsAssistant.prototype.sleepTimerStart = function(seconds) {
+    if( seconds ) {
+       Util.sleepRest = seconds;
+    }
+    if( !Util.sleepTimer && Util.sleepRest ) {
+       Util.sleepTimer = this.controller.window.setInterval(this.sleepTimerHandler.bind(this), 1000);
+       this.controller.get("sleepTimer").show();
+       this.adjustHeader();
+    }
+    if( !Util.sleepTimer ) {
+       if( this.controller !== undefined ) {
+          this.controller.get("sleepTimer").hide();
+          this.adjustHeader();
+       }
+    }
+}
+
+EpisodeDetailsAssistant.prototype.sleepTimerStop = function() {
+    if( Util.sleepTimer ) {
+       this.controller.window.clearInterval(Util.sleepTimer);
+       Util.sleepTimer = null;
+    }
+    this.controller.get("sleepTimer").hide();
+}
+
+EpisodeDetailsAssistant.prototype.sleepTimerHandler = function() {
+    if( Util.sleepRest > 0 ) {
+        if (this.audioObject && !this.audioObject.paused) {
+           Util.sleepRest--;
+        }
+        this.controller.update(this.controller.get("sleepTimer"), "sleep timer: " + ddMMSSString(Util.sleepRest) + " ");
+    } else {
+        this.sleepTimerStop();
+        this.pause();
+        //Util.banner("Sleep timer expired, pausing replay");
+        Util.showError("Replay paused, because the sleep timer has expired");
+    }
+}
+
+
+//----
+
 
 EpisodeDetailsAssistant.prototype.statusTimer = function() {
     var dots = "";
@@ -635,7 +706,7 @@ EpisodeDetailsAssistant.prototype.statusTimer = function() {
 };
 
 EpisodeDetailsAssistant.prototype.handleAudioEvents = function(event) {
-    Mojo.Log.info("AudioEvent: %s", event.type);
+    Mojo.Log.info("eda-AudioEvent: %s --- %d ", event.type, this.audioObject.currentTime);
     // During the loading process of an audio/video, the following events occur, in this order:
     // loadstart
     // durationchange
@@ -658,10 +729,10 @@ EpisodeDetailsAssistant.prototype.handleAudioEvents = function(event) {
                 Mojo.Log.info("resuming playback at %d", this.episodeObject.position);
                 try {
                     this.setStatus($L("Seeking"));
-                    this.audioObject.currentTime = this.episodeObject.position;
+                    this.audioObject.currentTime = this.episodeObject.position + 0.001;
                     this.resume = false;
                 } catch (e) {
-                    Mojo.Log.error("Error setting currentTime: %s", e.message);
+                    Mojo.Log.error("Error resuming: setting currentTime: '%s', will retry... ", e.message);
                 }
                 this.updateProgress();
             }
@@ -769,30 +840,24 @@ EpisodeDetailsAssistant.prototype.handleCommand = function(event) {
             case "playExternal-cmd":
                 this.playExternal();
                 break;
-         // case "about-cmd":
-         //     this.controller.showAlertDialog({
-         //             onChoose: function(value) {},
-         //             message: "<div style='width=100%; font-size: 30px;'>GuttenPodder - v" + Mojo.Controller.appInfo.version + "</div><HR>" +
-         //                     "Copyright 2012 Walter Koch<BR>" +
-         //                     "Copyright 2011 Bits Of God Software<BR>" +
-         //                     "Copyright 2010 Jamie Hatfield<BR>" +
-         //                     "Original Logo Design: <a href='http://jamie3d.com/'>Jamie Hamel-Smith</a><BR>" +
-         //                     "Original Logo Concept: <a href='http://www.userinterfaceicons.com/preview.php'>UII</a>",
-         //             allowHTMLMessage: true,
-         //             choices: [
-         //                 {label: "OK", value:""}
-         //             ]
-         //         });
-         //     event.stopPropagation();
-         //     break;
+
+            case "sleeptimer-off-cmd":  this.sleepTimerStop(); break;
+            case "sleeptimer-30-cmd":   this.sleepTimerStart(30); break;
+            case "sleeptimer-300-cmd":  this.sleepTimerStart(300); break;
+            case "sleeptimer-600-cmd":  this.sleepTimerStart(600); break;
+            case "sleeptimer-1200-cmd": this.sleepTimerStart(1200); break;
+            case "sleeptimer-1800-cmd": this.sleepTimerStart(1800); break;
+            case "sleeptimer-2700-cmd": this.sleepTimerStart(2700); break;
+            case "sleeptimer-3600-cmd": this.sleepTimerStart(3600); break;
+        
         case 'cmd-backButton' :
                 this.poppingScene= true;
                 this.controller.stageController.popScene();
                 break;
-
         }
     } else if (event.type === Mojo.Event.back) {
         this.poppingScene = true;
+        this.controller.stageController.popScene();
     }
 
 };
@@ -851,8 +916,10 @@ EpisodeDetailsAssistant.prototype.updateProgressLabels = function(currentTime) {
 };
 
 EpisodeDetailsAssistant.prototype.updateProgressLabelsValues = function(playbackProgress, playbackRemaining) {
-    this.controller.get("playback-progress").update(playbackProgress);
-    this.controller.get("playback-remaining").update(playbackRemaining);
+    if( this.controller !== undefined ) {
+       this.controller.get("playback-progress").update(playbackProgress);
+       this.controller.get("playback-remaining").update(playbackRemaining);
+    }
 };
 
 EpisodeDetailsAssistant.prototype.updateProgress = function(event, currentTime) {
@@ -909,7 +976,8 @@ EpisodeDetailsAssistant.prototype.play = function() {
         } else {
             if (this.audioObject.paused) {
                 this.disablePlay();
-            }
+            } 
+            
             this.audioObject.play();
             //this.controller.window.setTimeout(this.enablePlayPause.bind(this), 10000);
 
@@ -1025,7 +1093,6 @@ EpisodeDetailsAssistant.prototype.disablePause = function(needRefresh) {
 };
 
 EpisodeDetailsAssistant.prototype.setPlayPause = function(isPlay, isEnabled, needRefresh) {
-    Mojo.Log.info("setPlayPause(%d, %d, %d)", isPlay, isEnabled, needRefresh);
     var item;
     if (isPlay) {item = this.menuCommandItems.play;}
     else        {item = this.menuCommandItems.pause;}
@@ -1087,3 +1154,4 @@ EpisodeDetailsAssistant.prototype.considerForNotification = function(params) {
         }
     }
 };
+

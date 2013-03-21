@@ -163,10 +163,11 @@ Episode.prototype.makeFromAudioFile = function(audioFileObject) {
      *   obj.title=TWiT 368: The Zombie Slayer
      *   obj.track=[object Object]
      */
-    // Utilities.dump(audioFileObject);
+    //Utilities.dump(audioFileObject);        
+
     this.title = audioFileObject.title || "(no title)";
     this.link  = audioFileObject.path;
-    this.description = audioFileObject.searchKey + " - " + audioFileObject.path;
+    this.description = audioFileObject.searchKey + "<br><br>" + audioFileObject.path;
     var itunesSummary = this.description;
     if (itunesSummary && itunesSummary.length > this.description.length) {
         this.description = itunesSummary;
@@ -449,15 +450,15 @@ Episode.prototype.getDownloadFilename = function() {
 };
 
 Episode.prototype.downloadingCallback = function(event, e2) {
-    // Mojo.Log.info("downloadingCallback:");
-    // Utilities.dump(event);
-    // Mojo.Log.info("----e2----------------");
-    // Utilities.dump(e2);
+     // Mojo.Log.info("downloadingCallback:");
+     // Utilities.dump(event);
+     // Mojo.Log.info("----e2----------------");
+     // Utilities.dump(e2);
     // Mojo.Log.info("----e2.options----------------");
     // Utilities.dump(e2.options);
-    // Mojo.Log.info("----e2.reqObject--------------");
-    // Utilities.dump(e2.reqObject);
-    // Mojo.Log.info("--------------------");
+    //  Mojo.Log.info("----e2.reqObject--------------");
+     // Utilities.dump(e2.reqObject);
+     // Mojo.Log.info("--------------------");
 
     // Completion status code: 
     // -1 -- General error 
@@ -592,7 +593,7 @@ Episode.prototype.downloadingCallback = function(event, e2) {
         Util.removeMessage(DrPodder.DownloadingStageName, $L("Downloading"), this.title);
         this.feedObject.downloadFinished();
     } else if (this.downloading) {
-        Mojo.Log.info("Downloading else");
+        // Mojo.Log.info("Downloading else");
         var per = 0;
         // if amountTotal is < 2048 or so, we'll assume it's a redirect
         if (event.amountTotal > 0 && event.amountReceived > 0 && event.amountTotal > 2048) {

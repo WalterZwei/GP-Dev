@@ -70,4 +70,4 @@ Credits
     http://www.acomment.net/developer-icon-sets-collection-of-the-best-free-to-both-personal-commercial-use-icon-sets/152
     http://www.userinterfaceicons.com/
     http://www.famfamfam.com/lab/icons/silk/
-    http://www.damieng.com/icons/silkcompanion
+    http://www.damieng.com/icons/silkcompanion 

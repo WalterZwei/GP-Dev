@@ -179,9 +179,12 @@ AddFeedAssistant.prototype.setup = function() {
          choices: [
             {label: "publication date, newest first", value: 0}, 
             {label: "publication date, oldest first", value: 1}, 
-            {label: "title ", value: 2},
+            {label: "title", value: 2},
             {label: "title descending", value: 3},
-            {label: "url descending", value: 4}                  
+            {label: "path", value: 6},
+            {label: "path descending", value: 4},
+            {label: "detected numbers", value: 5},
+            {label: "(manual)", value: -1} 
          ]
         },
         this.sortingListModel = { value : this.maxEpisodes });
@@ -305,7 +308,7 @@ AddFeedAssistant.prototype.updateFields = function() {
     this.feed.autoDelete = this.autoDeleteModel.value;
     this.feed.hideFromOS = this.hideFilesModel.value;
     this.feed.maxDownloads = this.maxDownloadsModel.value;
-    if (this.sortingListModel != this.feed.maxEpisodes) {
+    if (this.sortingListModel.value != this.feed.maxEpisodes) {
         this.feed.maxEpisodes  = this.sortingListModel.value;
         this.feed.sortEpisodesAndPlaylists();
     }

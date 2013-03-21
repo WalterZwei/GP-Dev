@@ -14,7 +14,7 @@
    You should have received a copy of the GNU General Public License
    along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
 
-   GuttenPodder copyright 2012 Walter Koch <guttenpodder@u32.de>
+   GuttenPodder copyright 2012,2013 Walter Koch <guttenpodder@u32.de>
 
    GuttenPodder is a fork of drPodder (GPL3):
      drPodder is copyright 2010 Jamie Hatfield
@@ -22,7 +22,7 @@
    GuttenPodder contains code from podfrenzy (GPL3)
      podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
-           
+
 
 function FeedListAssistant() {
     this.appController = Mojo.Controller.getAppController();
@@ -42,10 +42,10 @@ FeedListAssistant.prototype.appMenuModel = {
     items: [
         // Mojo.Menu.editItem,
         {label:  $L({value:"Export/Import", key:"exportimportDrpodder"}) + "...",
-         items: [{label: $L({value:"Import from clipboard", key:"importClipDrpodder"}), command: "import-clipboard-cmd"},
-             {label: $L({value:"Import from drpodder.xml", key:"importDrpodder"}), command: "import-cmd"},
-             {label: $L({value:"Export to clipboard", key:"exportClipDrpodder"}), command: "export-clipboard-cmd"},
-             {label: $L({value:"Export via email", key:"exportDrpodder"}), command: "export-cmd"}]
+         items: [{label: $L({value:"Import from clipboard",    key:"importClipDrpodder"}), command: "import-clipboard-cmd"},
+                 {label: $L({value:"Import from drpodder.xml", key:"importDrpodder"}), command: "import-cmd"},
+                 {label: $L({value:"Export to clipboard",      key:"exportClipDrpodder"}), command: "export-clipboard-cmd"},
+                 {label: $L({value:"Export via email",         key:"exportDrpodder"}), command: "export-cmd"}]
         },
         {label: $L("Preferences")+ "...", command: "prefs-cmd"},
         {label: $L({value:"Add Default Feeds", key:"addDefaultFeeds"}), command: "addDefault-cmd"},
@@ -126,15 +126,14 @@ FeedListAssistant.prototype.setup = function() {
     } catch (e) {
         Mojo.Log.error("Error getting scroller fade: %j", e);
     }
+
 };
 
 FeedListAssistant.prototype.activate = function(result) {
     this.active = true;
-    //Mojo.Log.info("feedlist - acrivate ");
     if (result) {
-        //Utilities.dump(result);
+        // Utilities.dump(result);
         if (result.feedToAdd) {
-            //Mojo.Log.info("feedlist - acrivate - result "+ result.feedToAdd);
             var feed = new Feed();
             feed.title = result.feedToAdd.title;
             feed.url = result.feedToAdd.url;
@@ -151,6 +150,8 @@ FeedListAssistant.prototype.activate = function(result) {
             this.feedList.mojo.revealItem(feedModel.items.length-1, true);
             DB.saveFeeds();
         }
+    } else {
+        // this.feedList.mojo.revealItem(feedModel.items.length-1, true); //  XX
     }
 
     if (this.foregroundVolumeMarker) {
@@ -212,12 +213,12 @@ FeedListAssistant.prototype.activate = function(result) {
 
 
 FeedListAssistant.prototype.loadDefaultFeeds = function() {
-    var dialog = new drnull.Dialog.Confirm(this, $L({value:"Add Default Feeds", key:"addDefaultFeeds"}),
+    var dialog = new drnull.Dialog.Confirm(this, 
+        $L({value:"Add Default Feeds", key:"addDefaultFeeds"}),
         $L({value:"Would you like to add the following feeds?", key:"drpodderDefaults"}) +
         "<ul><li>This Week in Tech</li>" +
-        "<li>Engadget Podcast</li>" +
-        "<li>gdgt weekly</li>" +
-        "<li>Zeitzeichen (german)</li></ul>",
+            "<li>Engadget Podcast</li>" +
+            "<li>Zeitzeichen (german)</li></ul>",
         function() {
             this._loadDefaultFeeds();
         }.bind(this),
@@ -520,10 +521,6 @@ FeedListAssistant.prototype.handleDelete = function(event) {
 
 FeedListAssistant.prototype.handleReorder = function(event) {
     event.model.items.splice(event.fromIndex, 1);
-    var toIndex = event.toIndex;
-    if (toIndex > event.fromIndex) {
-        toIndex--;
-    }
     event.model.items.splice(event.toIndex, 0, event.item);
     DB.saveFeeds();
 };

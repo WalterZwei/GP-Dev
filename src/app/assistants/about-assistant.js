@@ -83,23 +83,21 @@ AboutAssistant.prototype.setup = function(){
 				listTitle: $L('Help and Information'),
 				items: helpitems
 			});
-		}
-	}catch(e){Mojo.Log.error(e)}
+    	}
+	} catch(e) {Mojo.Log.error(e)}
 	
-    this.controller.setupWidget('AppSupport_list', 
-				    {
+    this.controller.setupWidget('AppSupport_list', {
 						itemTemplate:'about/listitem', 
 						listTemplate:'about/listcontainer',
 						emptyTemplate:'about/emptylist',
 						swipeToDelete: false						
-					},
-				    {
+					}, {
 						listTitle: $L('Support'),
 			            items : supportitems
-			         }
+                    }
 	  );
 	
-        this.handleListTap = this.handleListTap.bind(this);  
+    this.handleListTap = this.handleListTap.bind(this);  
 	Mojo.Event.listen(this.controller.get('AppHelp_list'),Mojo.Event.listTap,this.handleListTap)
 	Mojo.Event.listen(this.controller.get('AppSupport_list'),Mojo.Event.listTap,this.handleListTap)
 	//this.controller.get( 'copywrite' ).innerHTML = _APP_Copyright;

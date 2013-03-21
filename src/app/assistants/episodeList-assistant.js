@@ -66,8 +66,10 @@ EpisodeListAssistant.prototype.viewMenuModel = {
 
 EpisodeListAssistant.prototype.filterEpisodes = function() {
     var newModel = this.feedObject.episodes;
-    Mojo.Log.info("filterEpisodes: %s", this.feedObject.viewFilter);
+    Mojo.Log.info("feed %s  filterEpisodes: %s", this.feedObject, this.feedObject.viewFilter);
+
     if (this.feedObject.viewFilter !== "ALL") {
+
         var filterFunc = function(e) {return !e.listened;};
         switch (this.feedObject.viewFilter) {
             case "old":
@@ -117,9 +119,10 @@ EpisodeListAssistant.prototype.filterEpisodes = function() {
     }
 };
 
+
 EpisodeListAssistant.prototype.setup = function() {
     this.cmdMenuModel = {items:[]};
-    this.backButton = {label:$L('Back'), command:'cmd-backButton'};
+    this.backButton = {label: $L('Back'), command:'cmd-backButton'};
     this.viewButton = {label: $L("View") + ": " + $L(this.feedObject.viewFilter), submenu: "filter-menu"};
     this.refreshButton = {icon: "refresh", command: "refresh-cmd"};
     
@@ -572,13 +575,33 @@ EpisodeListAssistant.prototype.handleDelete = function(event) {
 
 
 EpisodeListAssistant.prototype.handleReorder = function(event) {
-    // item are episodes
-    event.model.items.splice(event.fromIndex, 1);
-    var toIndex = event.toIndex;
-    if (toIndex > event.fromIndex) {
-        toIndex--;
+    var fromIndex = event.fromIndex;
+    var toIndex   = event.toIndex;
+
+    var fromEpi = event.model.items[fromIndex];
+    var toEpi   = event.model.items[toIndex];
+    
+    event.model.items.splice(fromIndex, 1);
+    event.model.items.splice(toIndex, 0, event.item);
+
+    // after changing model.items[] (=displayed items), we also have to change
+    // feedObject.epsiodes[], because that's the source for next filtering
+    fromIndex = toIndex = 0;
+    self = this;
+    var i = 0;
+    this.feedObject.episodes.forEach(function (e) {
+        if( e === fromEpi ) { fromIndex = i; }
+        if( e === toEpi   ) { toIndex   = i; }
+        i++;
+    });
+    this.feedObject.episodes.splice(fromIndex, 1);
+    this.feedObject.episodes.splice(toIndex, 0, fromEpi);
+   
+    if( this.feedObject.maxEpisodes != -1 ) {
+        this.feedObject.maxEpisodesOriginal = this.feedObject.maxEpisodes; 
+        this.feedObject.maxEpisodes = -1; // Setting feed ordering to 'manual'/do not sort
+        Util.banner("info: sorting set to 'manual'");
     }
-    event.model.items.splice(event.toIndex, 0, event.item);
 };
 
 

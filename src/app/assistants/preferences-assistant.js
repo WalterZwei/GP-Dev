@@ -152,6 +152,12 @@ PreferencesAssistant.prototype.setup = function() {
 		{},
 		{ value : Prefs.albumArt });
 
+
+//	this.controller.setupWidget("infomodusToggle",
+//		{},
+//		{ value : Prefs.debugSwitch });
+
+
 	this.controller.setupWidget("simpleToggle",
 		{},
 		{ value : !Prefs.simple });
@@ -159,7 +165,6 @@ PreferencesAssistant.prototype.setup = function() {
 	this.controller.setupWidget("singleTapToggle",
 		{},
 		{ value : Prefs.singleTap });
-
 	
 	this.backButton = {label:$L('Back'), command:'cmd-backButton'};
 	if(!_device_.thisDevice.kb){
@@ -182,6 +187,7 @@ PreferencesAssistant.prototype.setup = function() {
 	this.albumArtHandler = this.albumArt.bind(this);
 	this.simpleHandler = this.simple.bind(this);
 	this.singleTapHandler = this.singleTap.bind(this);
+	this.infomodusHandler = this.infomodus.bind(this);
 
 	if (Prefs.autoUpdate) {
 		this.controller.get("updateIntervalDiv").show();
@@ -223,6 +229,7 @@ PreferencesAssistant.prototype.activate = function() {
 	Mojo.Event.listen(this.controller.get('albumArtToggle'),Mojo.Event.propertyChange,this.albumArtHandler);
 	Mojo.Event.listen(this.controller.get('simpleToggle'),Mojo.Event.propertyChange,this.simpleHandler);
 	Mojo.Event.listen(this.controller.get('singleTapToggle'),Mojo.Event.propertyChange,this.singleTapHandler);
+	// Mojo.Event.listen(this.controller.get('infomodusToggle'),Mojo.Event.propertyChange,this.infomodusHandler);
 };
 
 PreferencesAssistant.prototype.deactivate = function() {
@@ -240,6 +247,7 @@ PreferencesAssistant.prototype.deactivate = function() {
 	Mojo.Event.stopListening(this.controller.get('albumArtToggle'),Mojo.Event.propertyChange,this.albumArtHandler);
 	Mojo.Event.stopListening(this.controller.get('simpleToggle'),Mojo.Event.propertyChange,this.simpleHandler);
 	Mojo.Event.stopListening(this.controller.get('singleTapToggle'),Mojo.Event.propertyChange,this.singleTapHandler);
+	// Mojo.Event.stopListening(this.controller.get('infomodusToggle'),Mojo.Event.propertyChange,this.infomodusHandler);
 	DB.writePrefs();
 };
 
@@ -372,6 +380,11 @@ PreferencesAssistant.prototype.simple = function(event) {
 PreferencesAssistant.prototype.singleTap = function(event) {
 	Prefs.singleTap = event.value;
 };
+
+PreferencesAssistant.prototype.infomodus = function(event) {
+	Prefs.debugSwitch = event.value;
+};
+
 
 PreferencesAssistant.prototype.handleCommand = function(event) {
 	if(event.type === Mojo.Event.command){

@@ -107,7 +107,10 @@ AddPlaylistAssistant.prototype.setup = function() {
             {label: "publication date, oldest first", value: 1}, 
             {label: "title ", value: 2},
             {label: "title descending", value: 3},
-            {label: "url descending", value: 4}                  
+            {label: "path", value: 6},
+            {label: "path descending", value: 4},
+            {label: "detected numbers", value: 5},
+            {label: "(manual)", value: -1} 
          ]
         },
         this.sortingListModel = { value : this.maxEpisodes });

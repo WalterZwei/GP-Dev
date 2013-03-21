@@ -64,8 +64,8 @@ function Feed(init) {
         this.numNew = init.numNew;
         this.numDownloaded = init.numDownloaded;
         this.numStarted = init.numStarted;
-        this.isLocalMedia = this.url.indexOf("media://") === 0;
-        this.playlist     = this.url.indexOf("drPodder://") === 0;
+        this.isLocalMedia = this.url && (this.url.indexOf("media://") === 0);
+        this.playlist     = this.url && (this.url.indexOf("drPodder://") === 0);
                 
         if (this.playlist) {
             var feedIds = this.url.substring(11);
@@ -123,9 +123,34 @@ function Feed(init) {
         }.bind(this));
     }
 
-    this.filenameFilterExp ="";
+    this.pathFilterExp ="";
+    this.titleFilterExp ="";
+    this.filterMode = "and";
     if (this.isLocalMedia) {
-        this.filenameFilterExp = this.url.substr(8);  // media://filterexpression
+        Mojo.Log.info("make feed from url %s", this.url);
+    
+        var sTmp = this.url.substr(8);
+        if( sTmp.indexOf("&&") >=0 ) {
+            this.filterMode = "and" ;
+            sTmp = sTmp.split("&&");  // media://titleexpression&&filenamexpression
+            this.titleFilterExp  = sTmp[0];
+            this.pathFilterExp = sTmp[1];
+        } else { 
+            this.filterMode = "or";
+            if( sTmp.indexOf("||") >=0 ) {
+                sTmp = sTmp.split("||");  // media://titleexpression||filenamexpression
+                this.titleFilterExp = sTmp[0];
+                this.pathFilterExp  = sTmp[1];
+            } else { 
+                this.filterMode = "title";
+                this.titleFilterExp = sTmp;
+                this.pathFilterExp  = "";
+            }
+            if ( this.titleFilterExp.length === 0 ) { this.filterMode = 'path'; }
+            if ( this.pathFilterExp.length === 0 ) { this.filterMode = 'title'; }
+        }
+        if ( this.titleFilterExp.length === 0 &&  this.pathFilterExp.length === 0 ) { this.filterMode = 'none'; }
+        Mojo.Log.info(" ... - '%s' %s '%s'", this.titleFilterExp, this.filterMode, this.pathFilterExp);
     }
 }
 
@@ -254,16 +279,20 @@ Feed.prototype.requestPermission = function (cbPermission, cbFail) {
      var stageController = Mojo.Controller.getAppController().getActiveStageController();
      var currentScene = stageController.activeScene(); 
      var didRequest = true; 
-
-     currentScene.serviceRequest('palm://com.palm.mediapermissions', {  
+     var self=this;
+     var ret = currentScene.serviceRequest('palm://com.palm.mediapermissions', {  
         method: 'request',  
         parameters: {  
             rights: {  
                     read: ["com.palm.media.audio.file:1"]  
             }  
         },  
+        onFailure: function(response) {
+           Mojo.Log.info("on fail=%j", response);
+           self.mediaPermissionError(response);
+        },
         onComplete: function(response) {  
-            Mojo.Log.error('completed requestPermission; %j',response);  
+            Mojo.Log.info('completed requestPermission; %j',response);  
             // this function is sometimes called more than once ... 
             if( didRequest ) {  // or   if( response.returnValue ) ... 
                 didRequest = false;
@@ -272,7 +301,7 @@ Feed.prototype.requestPermission = function (cbPermission, cbFail) {
                    cbPermission();
                 } else {          
                    Mojo.Log.error('Failed to get permissions');  
-                   Util.showError('No media permission', 'GuttenPodder can not access local files due to missing permissions');
+                   self.mediaPermissionError(response);
                    cbFail();
                 }  
             }
@@ -280,34 +309,78 @@ Feed.prototype.requestPermission = function (cbPermission, cbFail) {
     });
 }
 
-
-Feed.prototype.hasMatch = function(path, sFilter) {
-    return !( (!this.hideFromOS & (path.startsWith('/media/internal/drPodder/')))
-            | ((sFilter.length > 0) & (path.indexOf(sFilter) == -1))
-            ) 
+Feed.prototype.mediaPermissionError = function(response) {
+    Util.showError('No media permission', 
+                   'GuttenPodder can not access local files.'
+                 + ' Hint: local file access does not work with webOS 1.x.x. '
+                   + response.errorText 
+                  );
 }
+
+Feed.prototype.hasMatch = function(title, path) {
+    Mojo.Log.info ( "---- Match? ------- " + this.filterMode +"----" + title.toLowerCase() + "----" + path );
+    if (!this.hideFromOS && ((path.length>0) && (path.toLowerCase().startsWith('/media/internal/drpodder/')))) {
+        // Mojo.Log.error ( " - nope ---- " );
+        return false; // we do not want our own files here
+    }
+    if( path === undefined ) { path = ""; }
+
+    // Mojo.Log.error ( " -  title index   " + title.toLowerCase().indexOf(this.titleFilterExp.toLowerCase()) + " - " + title.toLowerCase());
+    // Mojo.Log.error ( " -  path index    " + path.toLowerCase().indexOf(this.pathFilterExp.toLowerCase() )  + " - " + path.toLowerCase() );
+    // Mojo.Log.error ( " -- titletest     " + ((this.titleFilterExp.length !== 0) && (title.toLowerCase().indexOf(this.titleFilterExp.toLowerCase()) >= 0)));
+    // Mojo.Log.error ( " -- pathtest      " + ((this.pathFilterExp.length  !== 0) && (path.toLowerCase().indexOf(this.pathFilterExp.toLowerCase()  ) >= 0)));
+
+    if (this.filterMode == "and") {
+       return (   ((this.titleFilterExp.length !== 0) && (title.toLowerCase().indexOf(this.titleFilterExp.toLowerCase()) >= 0))
+               && ((this.pathFilterExp.length  !== 0) && (path.toLowerCase().indexOf(this.pathFilterExp.toLowerCase()  ) >= 0))
+              );
+    }
+    if (this.filterMode == "or") {
+       return (  ((this.titleFilterExp.length !== 0) && (title.toLowerCase().indexOf(this.titleFilterExp.toLowerCase()) >= 0))
+               || ((this.pathFilterExp.length !== 0) && (path.toLowerCase().indexOf(this.pathFilterExp.toLowerCase()  ) >= 0))
+              );
+    }
+    if (this.filterMode == "path") {
+       return (  ((this.pathFilterExp.length !== 0) && (path.toLowerCase().indexOf(this.pathFilterExp.toLowerCase()  ) >= 0))
+              );
+    }
+    if (this.filterMode == "title") {
+       return (  ((this.titleFilterExp.length !== 0) && (title.toLowerCase().indexOf(this.titleFilterExp.toLowerCase()) >= 0))
+              );
+    }
+    // none
+    return true;
+}
+
 
 Feed.prototype.media2episode = function(arrAudioFile,callback) {
     var updateCheckStatus = UPDATECHECK_NOUPDATES;
-    var sFilter = this.filenameFilterExp ;
     var self = this;
 
-    Mojo.Log.info("%d files found; media filter '%s'", arrAudioFile.length, sFilter);
+    Mojo.Log.info("%d files found; media filter '%s' %s '%s'  ....   %s", arrAudioFile.length, 
+                                                                this.titleFilterExp, this.filterMode, this.pathFilterExp,
+                                                                this.hideFromOS 
+                                                                );
 
     // check weather existing Episodes still match
     this.episodes.forEach(function(e) {
-        if (!self.hasMatch(e.title, sFilter)) {
-           Mojo.Log.info("removing episode not matching anymore '" + e.title);
+        if (!self.hasMatch(e.title, e.enclosure)) {
+           Mojo.Log.warn("removing episode not matching anymore: '%s' - '%s'", e.title, e.enclosure);
+           self.guid[e.guid] = undefined;
            e.remove(false);
+        } else {
+           // mark: do the episode still exist on device?
+           e.tmpRemoveMark = true;
         }
     });
 
     // filtering episodes 
     for (i=0; arrAudioFile[i] != null; i++) {
        if( arrAudioFile[i].isRingtone ) {
-          //Mojo.Log.info("ignoring ringtone #"+i+"  path ="+ arrAudioFile[i].path);
+          Mojo.Log.info("ignoring ringtone #"+i+"  path ="+ arrAudioFile[i].path);
        } else {
-          if (!this.hasMatch(arrAudioFile[i].title, sFilter)) {
+          var retBool = this.hasMatch(arrAudioFile[i].title, arrAudioFile[i].path);
+          if (!retBool) {
              Mojo.Log.info(" filter ignored: "+ arrAudioFile[i].title);
           } else {
              Mojo.Log.info(" filter success: "+ arrAudioFile[i].title);
@@ -319,6 +392,7 @@ Feed.prototype.media2episode = function(arrAudioFile,callback) {
              episode.makeFromAudioFile(arrAudioFile[i]);
 
              var e = this.guid[episode.guid];
+
              Mojo.Log.info("looking for GUID: %s, found %s", episode.guid, e);
              if (e === undefined) {
                  Mojo.Log.info("new episode");
@@ -344,10 +418,21 @@ Feed.prototype.media2episode = function(arrAudioFile,callback) {
                      if (!hadEnclosure) { e.listened = false; this.numNew++; e.updateUIElements(true); }
                  }
                  e.type = episode.type;
+                 e.tmpRemoveMark = undefined;
              }
           }
       }
    }
+   
+   this.episodes.forEach(function(e) {
+        if( e.tmpRemoveMark == true ) {
+           // remove no longer existing episode
+           e.tmpRemoveMark = undefined;
+           Mojo.Log.warn("removing episode not longer exists as file: '%s' - '%s'", e.title, e.enclosure);
+           self.guid[e.guid] = undefined;
+           e.remove(false);
+        }
+   });
 
    // count 'em
    this.numNew = this.numDownloaded = this.numStarted = 0;
@@ -812,13 +897,15 @@ Feed.prototype.sortEpisodesAndPlaylists = function() {
 }
 
 Feed.prototype.sortEpisodes = function() {
-    //Mojo.Log.info("Sorting mode %i feed:  %s", this.maxEpisodes, this.title);
+    //Mojo.Log.info("Sorting mode %i / %i feed:  %s", this.maxEpisodesOriginal, this.maxEpisodes, this.title);
 
-    if ((this.maxEpisodes == 2) | (this.maxEpisodes ==3)) {
-        var self = this;
+    // maxEpisodes is an alias for 'sortMode'; yeah, bad design.
+    var self = this;
+    if ((this.maxEpisodes == 2) | (this.maxEpisodes == 3) | (this.maxEpisodes == 5) ) {
+        // apply manual substitution           
         this.episodes.forEach(function(e) {
             if (e.title) {
-               e.titleFormatted = self.replace(e.title);
+               e.titleFormatted = self.replace(e.title);  
             } else {
                e.titleFormatted = "";
             }
@@ -828,51 +915,104 @@ Feed.prototype.sortEpisodes = function() {
         });
     }
 
-    if (this.maxEpisodes == 0) { this.episodes.sort(this.sortEpisodesFunc0); }
-    if (this.maxEpisodes == 1) { this.episodes.sort(this.sortEpisodesFunc1); }
-    if (this.maxEpisodes == 2) { this.episodes.sort(this.sortEpisodesFunc2); }
-    if (this.maxEpisodes == 3) { this.episodes.sort(this.sortEpisodesFunc3); }
+    if (this.maxEpisodes == 5) { 
+        // apply numeric guess
+        var aRegexp =  /\d+[.]*\d*/;
+        try {
+           this.episodes.forEach(function(e) {
+              if( !e.titleNumber ) {
+                 e.titleNumber = 9999999;
+                 if (e.titleFormatted) {
+                    e.titleNumber = parseFloat(e.titleFormatted.match(aRegexp));
+                    // Mojo.Log.info("numGuess: '%s' --> %s", e.titleFormatted, e.titleNumber);
+                 }
+              }
+           })
+
+        } catch(ex) {
+           Mojo.Log.error( "exeception numguess  " + ex);
+        }
+    }
+
+    if (this.maxEpisodes == -1) { this.episodes.sort(this.sortEpisodesManualOrder); } 
+    if (this.maxEpisodes == 0) { this.episodes.sort(this.sortEpisodesFunc0); } // pubdate, desc
+    if (this.maxEpisodes == 1) { this.episodes.sort(this.sortEpisodesFunc1); } // pubdate, asc
+    if (this.maxEpisodes == 2) { this.episodes.sort(this.sortEpisodesFunc2); } // title  
+    if (this.maxEpisodes == 3) { this.episodes.sort(this.sortEpisodesFunc3); } // title
     if (this.maxEpisodes == 4) { this.episodes.sort(this.sortEpisodesFunc4); }
+    if (this.maxEpisodes == 5) { this.episodes.sort(this.sortEpisodesFuncTextNumericAsc); }
+    if (this.maxEpisodes == 6) { this.episodes.sort(this.sortEpisodesFunc6); }
 
     if (this.episodes.length > 0) { this.details = this.episodes[0].title; }
     this.updated();
     this.updatedEpisodes();
 };
 
-///         {label: "publication date, newest first", value: 0},
-///         {label: "publication date, oldest first", value: 1},
-///         {label: "title ", value: 2}
-///         {label: "title descending", value: 3}
-///         {label: "url descending", value: 4}
+
+Feed.prototype.sortEpisodesManualOrder = function(a,b) {
+    return a.displayOrder - b.displayOrder;
+}
 
 Feed.prototype.sortEpisodesFunc0 = function(a,b) {
-        if ((b.pubDate - a.pubDate) === 0) {
-                return a.displayOrder - b.displayOrder;
-            }
-        return (b.pubDate - a.pubDate);
+    ///         {label: "publication date, newest first", value: 0},
+    if ((b.pubDate - a.pubDate) === 0) {
+       return a.displayOrder - b.displayOrder;
+    }
+    return (b.pubDate - a.pubDate);
 }
+
 Feed.prototype.sortEpisodesFunc1 = function(a,b) {
-        if ((b.pubDate - a.pubDate) === 0) {
-                return b.displayOrder - a.displayOrder;
-            }
-        return (a.pubDate - b.pubDate);
+    ///         {label: "publication date, oldest first", value: 1},
+    if ((b.pubDate - a.pubDate) === 0) {
+       return b.displayOrder - a.displayOrder;
+    }
+    return (a.pubDate - b.pubDate);
 }
+
 Feed.prototype.sortEpisodesFunc2 = function(a,b) {
-        if (a.titleFormatted == b.titleFormatted) return a.displayOrder - b.displayOrder;
-        if (a.titleFormatted < b.titleFormatted) return -1;
-        if (a.titleFormatted > b.titleFormatted) return 1;
+    ///         {label: "title ", value: 2}
+    if (a.titleFormatted == b.titleFormatted) return a.displayOrder - b.displayOrder;
+    if (a.titleFormatted < b.titleFormatted) return -1;
+    if (a.titleFormatted > b.titleFormatted) return 1;
 }
+
 Feed.prototype.sortEpisodesFunc3 = function(a,b) {
-        if (a.titleFormatted == b.titleFormatted) return b.displayOrder - a.displayOrder;
-        if (a.titleFormatted > b.titleFormatted) return -1;
-        if (a.titleFormatted < b.titleFormatted) return 1;
+    ///         {label: "title descending", value: 3}
+    if (a.titleFormatted == b.titleFormatted) return b.displayOrder - a.displayOrder;
+    if (a.titleFormatted > b.titleFormatted) return -1;
+    if (a.titleFormatted < b.titleFormatted) return 1;
 }
+
 Feed.prototype.sortEpisodesFunc4 = function(a,b) {
-        if (a.url == b.url) return b.displayOrder - a.displayOrder;
-        if (a.url > b.url) return -1;
-        if (a.url < b.url) return 1;
+    ///         {label: "path descending", value: 4}
+    if (a.link == b.link) return b.displayOrder - a.displayOrder;
+    if (a.link > b.link) return -1;
+    if (a.link < b.link) return 1;
     return a.displayOrder - b.displayOrder;
-};
+};                                                       
+
+Feed.prototype.sortEpisodesFunc6 = function(a,b) {
+    ///         {label: "path ", value: 6}
+    if (a.link == b.link) return a.displayOrder - b.displayOrder;
+    if (a.link < b.link) return -1;
+    if (a.link > b.link) return 1;
+    return a.displayOrder - b.displayOrder;
+};                                                       
+
+              
+Feed.prototype.sortEpisodesFuncTextNumericAsc = function(a,b) {
+    if (a.titleNumber == b.titleNumber) {
+        if (a.link == b.link) return b.displayOrder - a.displayOrder;
+        if (a.link < b.link) return -1;
+        if (a.link > b.link) return 1;
+        return a.displayOrder - b.displayOrder;
+    }
+    if (a.titleNumber < b.titleNumber) return -1;
+    if (a.titleNumber > b.titleNumber) return 1;
+    return 1;
+};                                                       
+
+//------------
 
 
 Feed.prototype.addToPlaylists = function(episode) {

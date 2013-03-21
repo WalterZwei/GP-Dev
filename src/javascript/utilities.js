@@ -30,6 +30,7 @@ function Utilities(){
 }
 
 Utilities.dump = function(obj){
+// Utilities.dump()
     for (var key in obj) {
         if (obj.hasOwnProperty(key)) {
             Mojo.Log.info("obj." + key + "=" + obj[key]);
@@ -61,6 +62,32 @@ Mojo.Log.error("showerroroerror: %s %s", title, message );
         }
     }
 };
+
+
+// Utilities.prototype.storageFreeSpace = function(ctrl) {
+//   try {
+//       this.deviceinfo=Mojo.Environment.DeviceInfo;
+//       Mojo.Log.info("Maximum  %j", this.deviceinfo);
+//       Mojo.Log.info("stor "+this.deviceinfo.storageFreeSpace);
+//          
+//       new Mojo.Service.Request('palm://com.palm.preferences/systemProperties/getAllSysProperties', {
+//         onSuccess: function (response) { Mojo.Log.info("1free ok  %j",response); },
+//         onFailure: function (response) { Mojo.Log.info("1free fail  %j",response); }
+//       });
+// 
+//       new Mojo.Service.Request('palm://com.palm.preferences/systemProperties', {
+//        method: "Get",
+//         parameters: {
+//                "key": "com.palm.properties.storageFreeSpace"
+//         },
+//         onSuccess: function (response) { Mojo.Log.info("free ok  %j",response); },
+//         onFailure: function (response) { Mojo.Log.info("free fail  %j",response); }
+//       });
+//    } catch(e) {
+//       Mojo.Log.info("Error is this"+e);
+//    }
+// }
+
 
 Utilities.prototype.localize = function(assistant, element, value, key) {
     if (key) {
@@ -204,6 +231,18 @@ Utilities.prototype.closeDashboard = function(stageName) {
     if (cont) {cont.window.close();}
 };
 
+Utilities.prototype.isDockmode = function() {
+    new Mojo.Service.Request('palm://com.palm.display/', {
+        method: 'status',
+        parameters: {
+             "subscribe": false
+         },
+         onSuccess : function (e){ Mojo.Log.error("Status success, results="+JSON.stringify(e)); },
+         onFailure : function (e){ Mojo.Log.Errpr("Status failure, results="+JSON.stringify(e)); }
+    });
+    return false; // xx.
+}
+
 Utilities.prototype.formatTime = function(secs) {
     if (secs < 0) {
         return "00:00";
@@ -214,6 +253,20 @@ Utilities.prototype.formatTime = function(secs) {
     if (secs<10) {secs = "0"+secs;}
     return mins+":"+secs;
 };
+
+function ddMMSSString(value) { 
+    min = Math.floor( (Math.abs(value) / 60 ));
+    sec = Math.floor (Math.abs(value) - (60* min));
+    return  as2LZString(min) + ":" 
+          + as2LZString(sec)  
+    ;
+}
+
+function as2LZString(dec) {
+    if( dec < 10 ) return "0" + dec;
+    return dec;
+}
+
 
 
 Util = new Utilities();
