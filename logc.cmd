@@ -1,5 +1,5 @@
 echo setting log ...
-call palm-log --system-log-level=info  
+call palm-log --system-log-level=info
 echo following log ...
 call palm-log -f de.u32.guttenpodder   
 call palm-log --system-log-level=error 

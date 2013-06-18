@@ -1,8 +1,8 @@
 {
   "id":"de.u32.guttenpodder",
 
-  "version":"0.9.3",
-  "versionreleasedate": "21-Mar-2013",
+  "version":"0.9.4",
+  "versionreleasedate": "17-Jun-2013",
 
   "title":"GuttenPodder",
   "vendor":"W. Koch",
@@ -28,5 +28,6 @@
     }
   },
 
-  "uiRevision": 2  
+  "uiRevision": 2 
+
 }

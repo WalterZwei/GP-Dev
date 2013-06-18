@@ -163,7 +163,9 @@ Episode.prototype.makeFromAudioFile = function(audioFileObject) {
      *   obj.title=TWiT 368: The Zombie Slayer
      *   obj.track=[object Object]
      */
-    //Utilities.dump(audioFileObject);        
+
+ //Utilities.dump(audioFileObject);        
+ //Utilities.dump(audioFileObject.track);        
 
     this.title = audioFileObject.title || "(no title)";
     this.link  = audioFileObject.path;

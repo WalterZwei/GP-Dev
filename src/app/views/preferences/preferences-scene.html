@@ -22,7 +22,14 @@
         </div>
         
         <div id="updateIntervalDiv">
-            <div class="palm-row">
+
+            <div id="autoUpdateFeedIDListRow" class="palm-row">
+                <div class="palm-row-wrapper">         
+                    <div x-mojo-element="ListSelector" id="updateFeedIDList"></div>
+                </div>
+            </div>
+
+            <div id="updateTypeListRow" class="palm-row">
                 <div class="palm-row-wrapper">
                     <div x-mojo-element="ListSelector" id="updateTypeList"></div>
                 </div>
@@ -42,13 +49,16 @@
                     <div x-mojo-element="TimePicker" id="timePicker"></div>
                 </div>
             </div>
+
         </div>
+
         <div id="wifiToggleDiv" class="palm-row">
             <div class="palm-row-wrapper">
                 <div x-mojo-element="ToggleButton" id="wifiToggle"></div>
                 <div id="enableWifi" class="title">Enable Wifi</div>
             </div>
         </div>
+
         <div class="palm-row">
             <div class="palm-row-wrapper">
                 <div x-mojo-element="ToggleButton" id="playbackDashboardToggle"></div>

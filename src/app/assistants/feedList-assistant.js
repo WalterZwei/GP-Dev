@@ -29,12 +29,6 @@ function FeedListAssistant() {
     this.stageController = this.appController.getStageController(DrPodder.MainStageName);
 }
 
-FeedListAssistant.prototype.cmdMenuModel = {
-    items: [
-        {icon: "new", submenu: "add-menu"},
-        {icon: "refresh", command: "refresh-cmd", disabled: true}
-    ]
-};
 
 FeedListAssistant.prototype.appMenuAttr = {omitDefaultItems: true};
 FeedListAssistant.prototype.appMenuModel = {
@@ -72,9 +66,40 @@ FeedListAssistant.prototype.viewMenuModel = {
 
 
 FeedListAssistant.prototype.setup = function() {
+    this.cmdMenuModel = {items:[]};
+
+    this.cmdMenuModel.items.push( {icon: "new", submenu: "add-menu"});
+    this.cmdMenuRefreshButtonPos = 1;
+    if(!_device_.thisDevice.hasKeyboard) { 
+        // without keyboard add a search button to open virtual keyboard  
+        this.cmdMenuModel.items.push({icon: "search", command: "filterField-cmd"});
+        this.cmdMenuRefreshButtonPos++;
+    }
+    this.cmdMenuModel.items.push( {icon: "refresh", command: "refresh-cmd", disabled: true});
+
     this.controller.setupWidget(Mojo.Menu.commandMenu, this.handleCommand, this.cmdMenuModel);
     this.controller.setupWidget("add-menu", this.handleCommand, this.addMenuModel);
 
+    // Filter
+    var attr = {
+        filterFieldName: "name",
+        delay: 100,
+        filterFieldHeight: 100
+    };
+    this.model = {
+        disabled: false
+    };
+    
+    // Bind them handlers!
+    this.filter = this.listFilterEvent.bind(this);
+    
+    // Store references to reduce the use of controller.get()
+    this.filterField = this.controller.get('listFilterField');
+    
+    // Setup the widget
+    this.controller.setupWidget('listFilterField', attr, this.model);
+    
+    // List
     this.feedAttr = {
         itemTemplate: "feedList/feedRowTemplate",
         listTemplate: "feedList/feedListTemplate",
@@ -98,6 +123,7 @@ FeedListAssistant.prototype.setup = function() {
         }
     }
 
+    
     this.controller.setupWidget("feedListWgt", this.feedAttr, feedModel);
 
     this.feedList = this.controller.get("feedListWgt");
@@ -159,6 +185,7 @@ FeedListAssistant.prototype.activate = function(result) {
         this.foregroundVolumeMarker = null;
     }
     //this.foregroundVolumeMarker = AppAssistant.mediaEventsService.markAppForeground();
+    this.controller.listen('listFilterField', Mojo.Event.filter, this.filter);
     Mojo.Event.listen(this.feedList, Mojo.Event.listTap, this.handleSelectionHandler);
     Mojo.Event.listen(this.feedList, Mojo.Event.listDelete, this.handleDeleteHandler);
     Mojo.Event.listen(this.feedList, Mojo.Event.listReorder, this.handleReorderHandler);
@@ -263,7 +290,7 @@ FeedListAssistant.prototype.onFocus = function() {
     Util.closeDashboard(DrPodder.DownloadingStageName);
     Util.closeDashboard(DrPodder.DownloadedStageName);
 
-    this.cmdMenuModel.items[1].disabled = feedModel.updatingFeeds;
+    this.cmdMenuModel.items[this.cmdMenuRefreshButtonPos].disabled = feedModel.updatingFeeds;
     this.controller.modelChanged(this.cmdMenuModel);
 
     Mojo.Controller.getAppController().sendToNotificationChain({
@@ -284,6 +311,35 @@ FeedListAssistant.prototype.cleanup = function() {
         this.foregroundVolumeMarker = null;
     }
 };
+
+
+FeedListAssistant.prototype.listFilterEvent = function(event) {
+   var filterString = event.filterString;
+   //Mojo.Log.error("filtervalue '" + event.filterString+"'");
+
+   var newModel; 
+   if (filterString.length == 0) {
+       newModel = feedModel.items;
+   } else {
+       var exp = filterString.toLowerCase(); 
+       filterFunc = function(e) {
+           if( e.title == undefined ) return false;
+           if( e.title.length == 0 ) return false;
+           return (e.title.toLowerCase().indexOf(exp) >= 0)
+       };
+       var newModel = feedModel.items.filter(filterFunc);
+   }
+   this.feedList.mojo.noticeUpdatedItems(0, newModel);
+   this.feedList.mojo.setLength(newModel.length);
+
+   if (this.filterField) {
+       //  Once you know how many results you have after you've pruned your results,
+       //  Updated the count using mojo.setCount(). This changes the number in the little
+       //  bubble, adjacent to where the filter string is displayed
+       this.filterField.mojo.setCount(newModel.length);
+   }
+};
+
 
 FeedListAssistant.prototype._refreshDebounced = function() {
     this.needRefresh = true;
@@ -336,9 +392,9 @@ FeedListAssistant.prototype.detailsFormatter = function(details, model) {
 
 FeedListAssistant.prototype.handleSelection = function(event) {
     var targetClass = event.originalEvent.target.className;
-    //var feed = event.item;
-    var feedIndex = event.index;
-    var feed = feedModel.items[feedIndex];
+    var feed = event.item;
+    //var feedIndex = event.item.feedIndex;
+    // var feed = feedModel.items[feedIndex];
     if (targetClass.indexOf("feedStats") === 0) {
         var editCmd = {label: $L({value:"Edit Feed", key:"editFeed"}), command: "edit-cmd"};
         if (feed.playlist) {
@@ -352,7 +408,7 @@ FeedListAssistant.prototype.handleSelection = function(event) {
         // ## started
         // edit feed
         this.controller.popupSubmenu({
-            onChoose: this.popupHandler.bind(this, feed, feedIndex),
+            onChoose: this.popupHandler.bind(this, feed, 0),
             placeNear: event.originalEvent.target,
             items: [
                     //{label: "Last: "+feed.lastUpdate, command: 'dontwant-cmd', enabled: false},
@@ -365,7 +421,7 @@ FeedListAssistant.prototype.handleSelection = function(event) {
             ]});
     } else if (targetClass.indexOf("download") === 0) {
         this.controller.popupSubmenu({
-            onChoose: this.popupHandler.bind(this, feed, feedIndex),
+            onChoose: this.popupHandler.bind(this, feed, 0),
             placeNear: event.originalEvent.target,
             items: [
                     {label: $L({value:"Cancel Downloads", key:"cancelDownloads"}), command: 'cancelDownloads-cmd'}
@@ -421,6 +477,14 @@ FeedListAssistant.prototype.handleCommand = function(event) {
                 break;
             case "refresh-cmd":
                 this.updateFeeds();
+                break;
+            case "filterField-cmd":
+                  // open virt keyboard, see https://developer.palm.com/distribution/viewtopic.php?f=11&t=17285
+                  var ffAsst = this.filterField._mojoController.assistant;
+                  if (ffAsst.filterOpen)
+                     this.filterField.mojo.close();
+                  else
+                     this.filterField.mojo.open();
                 break;
             case "addDefault-cmd":
                 this.loadDefaultFeeds();
@@ -542,7 +606,7 @@ FeedListAssistant.prototype.considerForNotification = function(params) {
                 }
                 break;
             case "feedsUpdating":
-                this.cmdMenuModel.items[1].disabled = params.value;
+                this.cmdMenuModel.items[this.cmdMenuRefreshButtonPos].disabled = params.value;
                 this.controller.modelChanged(this.cmdMenuModel);
                 if (!params.value) {
                     this.refreshNow();

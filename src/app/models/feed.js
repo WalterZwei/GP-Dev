@@ -32,6 +32,7 @@ function FeedModel(init) {
 }
 
 var feedModel = new FeedModel();
+//var pickuplist = new Feed();
 
 function Feed(init) {
     if (init) {
@@ -154,6 +155,13 @@ function Feed(init) {
     }
 }
 
+
+Feed.prototype.updateAndDownload = function() {
+    this.update(
+       this.download.bind(this) // if autodownload is enabled for this
+    );
+}
+
 Feed.prototype.update = function(callback, url, reveal) {
     this.updating = true;
     this.updated(reveal);
@@ -249,7 +257,8 @@ Feed.prototype.updateMedia = function(callback) {
          method: 'find',  
          parameters: {  
              query: {  
-                 from: "com.palm.media.audio.file:1",  
+                 from: "com.palm.media.audio.file:1" ,  
+                 // from: [ "com.palm.media.audio.file:1", "com.palm.media.video.file:1" ],  
                  limit: 500
              }  
          },  
@@ -284,7 +293,10 @@ Feed.prototype.requestPermission = function (cbPermission, cbFail) {
         method: 'request',  
         parameters: {  
             rights: {  
-                    read: ["com.palm.media.audio.file:1"]  
+                    read: [
+                        "com.palm.media.audio.file:1",
+                       // "com.palm.media.video.file:1"  
+                    ]  
             }  
         },  
         onFailure: function(response) {
@@ -318,7 +330,7 @@ Feed.prototype.mediaPermissionError = function(response) {
 }
 
 Feed.prototype.hasMatch = function(title, path) {
-    Mojo.Log.info ( "---- Match? ------- " + this.filterMode +"----" + title.toLowerCase() + "----" + path );
+    // Mojo.Log.info ( "---- Match? ------- " + this.filterMode +"----" + title.toLowerCase() + "----" + path );
     if (!this.hideFromOS && ((path.length>0) && (path.toLowerCase().startsWith('/media/internal/drpodder/')))) {
         // Mojo.Log.error ( " - nope ---- " );
         return false; // we do not want our own files here
@@ -357,10 +369,11 @@ Feed.prototype.media2episode = function(arrAudioFile,callback) {
     var updateCheckStatus = UPDATECHECK_NOUPDATES;
     var self = this;
 
-    Mojo.Log.info("%d files found; media filter '%s' %s '%s'  ....   %s", arrAudioFile.length, 
-                                                                this.titleFilterExp, this.filterMode, this.pathFilterExp,
-                                                                this.hideFromOS 
-                                                                );
+    Mojo.Log.info("%d files found; media filter '%s' %s '%s'  ....   %s",
+                  arrAudioFile.length, 
+                  this.titleFilterExp, this.filterMode, this.pathFilterExp,
+                  this.hideFromOS 
+    );
 
     // check weather existing Episodes still match
     this.episodes.forEach(function(e) {
@@ -1310,7 +1323,7 @@ Feed.prototype.getDownloadPath = function() {
 };
 
 
-
+//------------------------------------------------------
 
 FeedModel.prototype.items = [];
 FeedModel.prototype.ids = [];
@@ -1335,7 +1348,7 @@ FeedModel.prototype._enableWifiIfDisabled = function(status) {
 FeedModel.prototype.updateFeeds = function(feedIndex) {
     if (!feedIndex) {
         this.enabledWifi = false;
-        if (false && Prefs.enableWifi) {
+        if (false && Prefs.enableWifi) { //?
             AppAssistant.wifiService.getStatus(null, this._enableWifiIfDisabled.bind(this));
         }
 

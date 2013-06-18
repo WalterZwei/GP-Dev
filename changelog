@@ -1,5 +1,4 @@
-Changes (based on drPodder 0.7.7):
-
+Changes (compared to drPodder 0.7.7):
 
 0.8.4 (annonced on nexave.de and webosnation.com forum drpodder thread)
 * new episode filter "not downloaded & new", "downloaded & new"
@@ -70,13 +69,22 @@ Changes (based on drPodder 0.7.7):
 * fix: every word of the episode title was always capitalized by webos 
 * del: removed "gdgt weekly" from default feeds (it's dead, Jim)
 
+0.9.4 (2013-06-18)
+* fix: Landscape mode looks prettier now, but not perfect 
+* new: filter for feed list and episode list. Just type a filter expression (case insensitive).
+  On Touchpad tap the new search button for start
+* new: auto update optional for one selected feed or playlist only. 
+* mod: auto update time picker intervall now 5 minutes instead of 15 minutes
+* fix: back button is only needed when no gesture area is availble; existence of
+  physical keyboard is of no relevance. As a result on phones many stages do not show any longer a back
+  button.
 
 Known errors: 
 * sometimes audio streaming does not work
 * some podcast do not play because of strange http redirection 
 * video podcasts are not bookmarked
-* sometimes feed list becomes invisible and must be scrolled to become visible again
-* search via podcast.de does not work any more (I've contacted them)
+* sometimes part of the feed list becomes invisible and must be scrolled to become visible again
+* search via podcast.de does not work any more (I've contacted them, they did not answer)
 * the translations are not complete (my fault)
-
+* reordering feeds while filter field is in use could result in, ahm, funny optics
 

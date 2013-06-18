@@ -11,7 +11,7 @@ AboutAssistant.prototype.setup = function(){
 	)
 	
 	this.backButton = {label:$L('Back'), command:'cmd-backButton'};
-	if(!_device_.thisDevice.kb){
+	if(!_device_.thisDevice.hasGesture){
 		this.cmdMenuModel = {items:[]};
 		this.cmdMenuModel.items.push(this.backButton);
 		this.controller.setupWidget(Mojo.Menu.commandMenu, {}, this.cmdMenuModel);

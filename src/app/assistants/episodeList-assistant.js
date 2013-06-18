@@ -14,19 +14,21 @@
    You should have received a copy of the GNU General Public License
    along with GuttenPodder.  If not, see <http://www.gnu.org/licenses/>.
 
-   GuttenPodder copyright 2012 Walter Koch <guttenpodder@u32.de>
+   GuttenPodder copyright 2012-2013 Walter Koch <guttenpodder@u32.de>
 
    GuttenPodder is a fork of drPodder (GPL3):
      drPodder is copyright 2010 Jamie Hatfield
 
-   GuttenPodder contains code from podfrenzy (GPL3)
+   GuttenPodder contains few code from podfrenzy (GPL3)
      podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
-           
+ 
 
 function EpisodeListAssistant(feedObject) {
     this.feedObject = feedObject;
     this.episodeModel = {items: []};
+
+    this.feedTitleFilterExp = "";
 
     this.appController = Mojo.Controller.getAppController();
     this.stageController = this.appController.getStageController(DrPodder.MainStageName);
@@ -70,7 +72,7 @@ EpisodeListAssistant.prototype.filterEpisodes = function() {
 
     if (this.feedObject.viewFilter !== "ALL") {
 
-        var filterFunc = function(e) {return !e.listened;};
+        var filterFunc = function(e) {return !e.listened;};  // new; is default function
         switch (this.feedObject.viewFilter) {
             case "old":
                 filterFunc = function(e) {return e.listened;};
@@ -101,6 +103,16 @@ EpisodeListAssistant.prototype.filterEpisodes = function() {
         newModel = this.feedObject.episodes.filter(filterFunc);
     }
 
+    if (this.feedTitleFilterExp !== "") {
+        var exp = this.feedTitleFilterExp.toLowerCase(); 
+        filterFunc = function(e) {
+           if( e.title == undefined ) return false;
+           if( e.title.length == 0 ) return false;
+            return (e.title.toLowerCase().indexOf(exp) >= 0)
+        };
+        newModel = newModel.filter(filterFunc);
+    }
+
     var refreshNeeded = false;
     if (newModel.length !== this.episodeModel.items.length) {
         refreshNeeded = true;
@@ -117,25 +129,49 @@ EpisodeListAssistant.prototype.filterEpisodes = function() {
         this.episodeModel.items = newModel;
         this.refreshNow();
     }
+
+    // show stage title
+    if( this.feedTitleFilterExp == '' ) {
+       this.viewMenuModel.items[0].items[1].label = this.feedObject.title + ' (' + this.episodeModel.items.length + ' epis.)';
+    } else {
+       this.viewMenuModel.items[0].items[1].label = '"' + this.feedTitleFilterExp + '": ' + this.episodeModel.items.length + ' epis. "' + this.feedObject.title + '"';
+    }
+
+    if (this.filterField) {
+       //  Once you know how many results you have after you've pruned your results,
+       //  Updated the count using mojo.setCount(). This changes the number in the little
+       //  bubble, adjacent to where the filter string is displayed
+       this.filterField.mojo.setCount(this.episodeModel.items.length);
+    }
+
+    this.controller.modelChanged(this.viewMenuModel);
 };
 
 
 EpisodeListAssistant.prototype.setup = function() {
     this.cmdMenuModel = {items:[]};
+
     this.backButton = {label: $L('Back'), command:'cmd-backButton'};
     this.viewButton = {label: $L("View") + ": " + $L(this.feedObject.viewFilter), submenu: "filter-menu"};
+    this.filterFieldButton = {icon: "search", command: "filterField-cmd"};
     this.refreshButton = {icon: "refresh", command: "refresh-cmd"};
     
-    this.cmdMenuViewButtonPos= 0;
-    this.cmdMenuRefreshButtonPos= 1;
+    this.cmdMenuViewButtonPos    = 0;
+    this.cmdMenuRefreshButtonPos = 1;
     
-    if(!_device_.thisDevice.kb){
+    if(!_device_.thisDevice.hasGesture){
         this.cmdMenuModel.items.push(this.backButton);
-        this.cmdMenuViewButtonPos= 1;
-        this.cmdMenuRefreshButtonPos= 2;
+        this.cmdMenuViewButtonPos++;
+        this.cmdMenuRefreshButtonPos++;
     }
     this.cmdMenuModel.items.push(this.viewButton);
+    if(!_device_.thisDevice.hasKeyboard) { 
+        // without keyboard add a search button to open virtual keyboard  
+        this.cmdMenuModel.items.push(this.filterFieldButton);
+        this.cmdMenuRefreshButtonPos++;
+    }
     this.cmdMenuModel.items.push(this.refreshButton);
+
     this.controller.setupWidget(Mojo.Menu.commandMenu, {}, this.cmdMenuModel);
 
     this.menuModel = {
@@ -166,17 +202,36 @@ EpisodeListAssistant.prototype.setup = function() {
     if (this.feedObject.displayOrder > 0) {
         viewMenuPrev = {icon: "back", command: "feedPrev-cmd"};
     }
-
     if (this.feedObject.displayOrder < feedModel.items.length-1) {
         viewMenuNext = {icon: "forward", command: "feedNext-cmd"};
     }
-
     this.viewMenuModel.items = [{items: [viewMenuPrev,
                                         {label: this.feedObject.title,  width: 200,  command: "feed-cmd"},
-                                        viewMenuNext]}];
-    this.controller.setupWidget(Mojo.Menu.viewMenu,
-                                {}, this.viewMenuModel);
+                                        viewMenuNext]
+                                }];
+    this.controller.setupWidget(Mojo.Menu.viewMenu, {}, this.viewMenuModel);
 
+    // Filter
+    var attr = {
+        filterFieldName: "name",
+        delay: 100 /*,
+        filterFieldHeight: 100 */
+    };
+    this.model = {
+        disabled: false
+    };
+    
+    // Bind them handlers!
+    this.filter = this.listFilterEvent.bind(this);
+    
+    // Store references to reduce the use of controller.get()
+    this.filterField = this.controller.get('listFilterField');
+    
+    // Setup the widget
+    this.controller.setupWidget('listFilterField', attr, this.model);
+
+
+    // List
     var itemTemplate ="episodeList/episodeRowTemplate";
     if (this.feedObject.playlist) {
         itemTemplate = "episodeList/playlistRowTemplate";
@@ -223,18 +278,21 @@ EpisodeListAssistant.prototype.setup = function() {
     this.orientationChanged(this.stageController.getWindowOrientation());
 };
 
+
 EpisodeListAssistant.prototype.orientationChanged = function(orientation) {
     if (Prefs.freeRotation) {
-        var item = this.viewMenuModel.items[0].items[1];
         // change viewMenu size
-        var width = Mojo.Environment.DeviceInfo.screenWidth - 120;
-        var height = Mojo.Environment.DeviceInfo.screenHeight - 120;
-        if (orientation === 'left' || orientation === 'right') {
-            item.width = height;
-        } else if (orientation === 'up' || orientation === 'down') {
-            item.width = width;
+        try {
+           var item = this.viewMenuModel.items[0].items[1];
+           if (orientation === 'left' || orientation === 'right') {
+              item.width = Mojo.Environment.DeviceInfo.screenHeight * 0.5 ;
+           } else if (orientation === 'up' || orientation === 'down') {
+              item.width = Mojo.Environment.DeviceInfo.screenWidth  * 0.4 ;
+           }
+           this.controller.modelChanged(this.viewMenuModel);
+        } catch (f) {
+           Mojo.Log.error("Exception orientation %s", f);
         }
-        this.controller.modelChanged(this.viewMenuModel);
     }
 };
 
@@ -272,14 +330,18 @@ EpisodeListAssistant.prototype.albumArtFormatter = function(albumArt, model) {
 EpisodeListAssistant.prototype.activate = function(changes) {
     this.refresh();
     this.filterEpisodes();
+    this.controller.listen('listFilterField', Mojo.Event.filter, this.filter);
     Mojo.Event.listen(this.episodeList, Mojo.Event.listTap, this.handleSelectionHandler);
     Mojo.Event.listen(this.episodeList, Mojo.Event.listDelete, this.handleDeleteHandler);
     Mojo.Event.listen(this.episodeList, Mojo.Event.listReorder, this.handleReorderHandler);
 //  Mojo.Event.listen(this.episodeList, Mojo.Event.hold, this.handleHoldHandler);
     Mojo.Event.listen(this.episodeList, Mojo.Event.dragStart, this.dragStartHandler);
-};
+
+}
+
 
 EpisodeListAssistant.prototype.deactivate = function(changes) {
+    this.controller.stopListening('listFilterField', Mojo.Event.filter, this.filter);
     Mojo.Event.stopListening(this.episodeList, Mojo.Event.listTap, this.handleSelectionHandler);
     Mojo.Event.stopListening(this.episodeList, Mojo.Event.listDelete, this.handleDeleteHandler);
     Mojo.Event.stopListening(this.episodeList, Mojo.Event.listReorder, this.handleReorderHandler);
@@ -334,6 +396,14 @@ EpisodeListAssistant.prototype.handleCommand = function(event) {
                     Util.closeDashboard(DrPodder.DashboardStageName);
                     this.filterEpisodes();
                 }.bind(this));
+                break;
+            case "filterField-cmd":
+                  // open virt keyboard, see https://developer.palm.com/distribution/viewtopic.php?f=11&t=17285
+                  var ffAsst = this.filterField._mojoController.assistant;
+                  if (ffAsst.filterOpen)
+                     this.filterField.mojo.close();
+                  else
+                     this.filterField.mojo.open();
                 break;
             case "playFromNewest-cmd":
                 this.playFrom();
@@ -615,6 +685,7 @@ EpisodeListAssistant.prototype.cmdItems = {
     restartCmd    : {label: $L("Restart"), command: "restart-cmd"},
     listenedCmd   : {label: $L({value:"Mark as Old", key:"markOld"}), command: "listen-cmd"},
     unlistenedCmd : {label: $L({value:"Mark as New", key:"markNew"}), command: "unlisten-cmd"},
+  //  pickupCmd     : {label: $L({value:"put in Pickuplist", key:"putPickuplist"}), command: "pickup-cmd"},
     clearCmd      : {label: $L({value:"Clear Bookmark", key:"clearBookmark"}), command: "clear-cmd"},
     detailsCmd    : {label: $L({value:"Episode Details", key:"episodeDetails"}), command: "details-cmd"},
     noEnclosureCmd: {label: $L({value:"No enclosure found", key:"noEnclosureFound"}), command: "noenclosure-cmd", disabled: true}
@@ -669,6 +740,7 @@ EpisodeListAssistant.prototype.handleSelection = function(event) {
             } else {
                 items.push(this.cmdItems.listenedCmd);
             }
+            // items.push(this.cmdItems.pickupCmd);
             items.push(this.cmdItems.detailsCmd);
         }
     } else { // single tap popup menu 
@@ -709,6 +781,14 @@ EpisodeListAssistant.prototype.handleSelection = function(event) {
     }
 };
 
+
+EpisodeListAssistant.prototype.listFilterEvent = function(event) {
+   this.feedTitleFilterExp = event.filterString;
+   // filter anstossen 
+   this.filterEpisodes();
+};
+    
+
 EpisodeListAssistant.prototype.menuSelection = function(episode, command) {
     //Mojo.Log.info("we try to do:", command, "to", episode.title);
     switch (command) {
@@ -718,6 +798,9 @@ EpisodeListAssistant.prototype.menuSelection = function(episode, command) {
         case "unlisten-cmd":
             episode.setUnlistened();
             break;
+  //    case "pickup-cmd":
+  //        pickuplist.insertEpisodeTop(episode);
+  //        break;
         case "cancel-cmd":
             episode.cancelDownload();
             break;

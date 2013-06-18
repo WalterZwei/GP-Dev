@@ -83,7 +83,7 @@ EpisodeDetailsAssistant.prototype.menuCommandItems = {
     download:    {icon: "save", command: "download-cmd"},
     cancel:      {icon: "stop", command: "cancel-cmd"},
     pause:       {iconPath: "images/mini-player-icon-pause.png", command: "pause-cmd"},
-    play:        {iconPath: "images/mini-player-icon-play.png", command: "play-cmd"},
+    play:        {iconPath: "images/mini-player-icon-play.png",  command: "play-cmd"},
     deleteFile:  {icon: "delete", command: "delete-cmd"},
     skipForward: {iconPath: "images/menu-icon-music-forward.png", command: "skipForward-cmd"},
     skipBack:    {iconPath: "images/menu-icon-music-rewind.png", command: "skipBack-cmd"},
@@ -142,6 +142,7 @@ EpisodeDetailsAssistant.prototype.setup = function() {
      //             s = s + "<tr><td> " + key + "</td><td>" + self.episodeObject[key] + "</td></tr>";
      //         }
      //     }
+     //     // s = s + "<tr><td> " +  + "</td><td>" + self. + "</td></tr>";
      //     self.controller.update(self.controller.get("episodeDetailsExtended"), s + "</table>");
      // }
 
@@ -177,7 +178,7 @@ EpisodeDetailsAssistant.prototype.setup = function() {
     this.audioObject = {};
     this.player = {};
 
-    if(!_device_.thisDevice.kb){
+    if(!_device_.thisDevice.hasGesture){
         this.cmdMenuModel = {items: [{},{},{},{},{},{}]};
         this.cmdMenuModel.items[0]= this.menuCommandItems.back;
         this.bak60Pos=1;
@@ -277,25 +278,24 @@ EpisodeDetailsAssistant.prototype.setup = function() {
 };
 
 EpisodeDetailsAssistant.prototype.orientationChanged = function(orientation) {
-    var width = Mojo.Environment.DeviceInfo.screenWidth;
-    var height = Mojo.Environment.DeviceInfo.screenHeight;
+    if (!Prefs.freeRotation) {
+        orientation = 'up';
+    }
 
-    if (Prefs.freeRotation) {
-        Mojo.Log.info("Episode - free rot - orientationChanged - height: ", height, " - width: ", width);
-        var item = this.controller.get('progress');
-        item.removeClassName('portrait');
-        item.removeClassName('landscape480');
-        item.removeClassName('landscape400');
+    try {
+       var item = this.controller.get('progress');
 
-        if (orientation === 'left' || orientation === 'right') {
-            item.addClassName('landscape' + height);
-        } else if (orientation === 'up' || orientation === 'down') {
-            item.addClassName('portrait' + width);
-        }
-
-        this.adjustHeader();
+       if (orientation === 'left' || orientation === 'right') {
+           item.style.width = (Mojo.Environment.DeviceInfo.screenHeight * 0.9) + 'px'; 
+       } else if (orientation === 'up' || orientation === 'down') {
+           item.style.width = (Mojo.Environment.DeviceInfo.screenWidth * 0.9) + 'px'; 
+       }
+       this.adjustHeader();
+    } catch (f) {
+       Mojo.Log.error("Exception orientationChanged orientationChanged %s", f);
     }
 };
+
 
 EpisodeDetailsAssistant.prototype.adjustHeader = function() {
     var height=this.controller.get("topContent").getHeight();

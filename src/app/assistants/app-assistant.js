@@ -69,14 +69,20 @@ AppAssistant.prototype.handleLaunch = function(launchParams) {
 
 AppAssistant.prototype.handleLaunchParams = function(launchParams) {
 	Mojo.Log.warn("handleLaunchParams called: %s", launchParams.action);
-	var dashboardOpen = this.controller.getStageController(DrPodder.DashboardStageName);
-	var downloadedDashboardOpen = this.controller.getStageController(DrPodder.DownloadedStageName);
+	var dashboardOpen            = this.controller.getStageController(DrPodder.DashboardStageName);
+	var downloadedDashboardOpen  = this.controller.getStageController(DrPodder.DownloadedStageName);
 	var downloadingDashboardOpen = this.controller.getStageController(DrPodder.DownloadingStageName);
 	switch (launchParams.action) {
 		case "updateFeeds":
 			this.setWakeup();
 			if (Prefs.autoUpdate && !downloadingDashboardOpen && !feedModel.updatingFeeds) {
-				feedModel.updateFeeds();
+                if( (Prefs.autoUpdateFeedID == undefined) | (Prefs.autoUpdateFeedID == 'all') ) {
+                   Mojo.Log.error("info; launching: updateFeeds()");
+                   feedModel.updateFeeds();
+                } else {
+                   Mojo.Log.error("info; launching: update one feed " + Prefs.autoUpdateFeedID);
+                   feedModel.getFeedById(Prefs.autoUpdateFeedID).updateAndDownload()
+                }
 			}
 			break;
 		case "download":
@@ -123,20 +129,20 @@ AppAssistant.prototype.setWakeup = function() {
 		}
 		Mojo.Log.warn("alarmTime: %s", alarmTime);
 		if (alarmType === "at") {
-			// verify that the time is at least 6 minutes in the future
+			// verify that the time is at least 1 minutes in the future
 			// if not, jump forward a day or a week depending on Prefs.updateType
-			// ACTUALLY this isn't necessary.  AT alarms can fire off whenever.
-			// just make sure it's not earlier today, otherwise it fires off immediately
-			 if (now.valueOf() > alarmDate.valueOf()) {
+			// ACTUALLY drnull said, "this isn't necessary.  AT alarms can fire off whenever.
+			// just make sure it's not earlier today, otherwise it fires off immediately"
+             if (now.valueOf() + 1*60*1000 > alarmDate.valueOf()) {
 				alarmDate.setDate(alarmDate.getDate() + ((Prefs.updateType==="D")?1:7));
 			}
 			// "mm/dd/yyyy hh:mm:ss"
 			var d = alarmDate;
 			var mo = "" + (d.getUTCMonth()+1); if (mo.length === 1) { mo = "0" + mo;}
-			var da = "" + d.getUTCDate();    if (da.length === 1) { da = "0" + da;}
+			var da = "" + d.getUTCDate();      if (da.length === 1) { da = "0" + da;}
 			var yy = "" + d.getUTCFullYear();
-			var hh = "" + d.getUTCHours();   if (hh.length === 1) { hh = "0" + hh;}
-			var mi = "" + d.getUTCMinutes(); if (mi.length === 1) { mi = "0" + mi;}
+			var hh = "" + d.getUTCHours();     if (hh.length === 1) { hh = "0" + hh;}
+			var mi = "" + d.getUTCMinutes();   if (mi.length === 1) { mi = "0" + mi;}
 			alarmTime = mo + "/" + da + "/" + yy + " " + hh + ":" + mi + ":00";
 		}
 		if (alarmTime && alarmType) {
@@ -156,8 +162,8 @@ AppAssistant.prototype.setWakeup = function() {
 					Mojo.Log.warn("Alarm set failure: %s:%s", response.returnValue, response.errorText);
 				}
 			});
+            return alarmTime;
 		}
-
 	}
 };
 

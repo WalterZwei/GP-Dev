@@ -33,7 +33,7 @@ LoadingAssistant.prototype.setup = function() {
 	this.versionDiv = this.controller.get("versionDiv");
 	this.loadingDiv = this.controller.get("loadingDiv");
 	                                                                           
-	if(!_device_.thisDevice.kb){
+	if(_device_.thisDevice.isTP){
 		this.spinnerScrim.removeClassName("drpodder-large-logo");
         
         var orient = this.controller.stageController.getWindowOrientation();

@@ -19,7 +19,7 @@
    GuttenPodder is a fork of drPodder (GPL3):
      drPodder is copyright 2010 Jamie Hatfield
 
-   GuttenPodder contains code from podfrenzy (GPL3)
+   GuttenPodder contains few code from podfrenzy (GPL3)
      podFrenzy is (c) Copyright 2011 Bits Of God Software, LLC 
 */
  
