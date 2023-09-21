@@ -1,5 +1,7 @@
-drPodder
-drnull - support@drpodder.com
+GuttenPodder is a podcatcher (podcast download and listener) app for webOS devices. 
+It is derrived work of drPodder, a well known podcast app by Jamie Hatfield. 
+
+The project is discontinued.
 
 USAGE:
   - Add your feeds
